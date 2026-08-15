@@ -1,6 +1,6 @@
 /**
  * StudyZone - Settings & Data Management Module (js/settings.js)
- * Day 6 - Task 2: Profile settings, theme accent palette, JSON export/import, & Factory Reset.
+ * Profile preferences, dynamic accent palette engine, JSON export/import, & Factory Reset.
  */
 
 document.addEventListener('DOMContentLoaded', () => {
@@ -15,12 +15,13 @@ const SettingsManager = {
 
     loadFormValues() {
         const settings = Storage.loadSettings();
+        const activeUser = Storage.getActiveUser();
 
         // Profile Inputs
         const nameInput = document.getElementById('setting-user-name');
         const roleInput = document.getElementById('setting-user-role');
-        if (nameInput) nameInput.value = settings.userName || 'Alex Rivera';
-        if (roleInput) roleInput.value = settings.userRole || 'CS Major, 3rd Year';
+        if (nameInput) nameInput.value = activeUser ? activeUser.name : (settings.userName || '');
+        if (roleInput) roleInput.value = activeUser ? (activeUser.role || '') : (settings.userRole || '');
 
         // Attendance Threshold
         const attInput = document.getElementById('setting-att-target');
@@ -58,11 +59,14 @@ const SettingsManager = {
         // Save Attendance Threshold
         const attInput = document.getElementById('setting-att-target');
         if (attInput) {
-            attInput.addEventListener('change', () => {
+            attInput.addEventListener('input', () => {
                 const val = parseInt(attInput.value, 10) || 75;
                 Storage.updateSettingKey('attendanceTarget', val);
                 if (window.AttendanceManager && typeof window.AttendanceManager.renderAttendance === 'function') {
                     window.AttendanceManager.renderAttendance();
+                }
+                if (window.AppRouter && typeof window.AppRouter.showToast === 'function') {
+                    window.AppRouter.showToast(`Attendance target updated to ${val}%`, '📊');
                 }
             });
         }
@@ -99,29 +103,30 @@ const SettingsManager = {
         }
     },
 
-    // 1. Save Profile Settings
     saveProfile() {
-        const userName = document.getElementById('setting-user-name').value.trim() || 'Alex Rivera';
-        const userRole = document.getElementById('setting-user-role').value.trim() || 'Active Student';
+        const userName = document.getElementById('setting-user-name').value.trim();
+        const userRole = document.getElementById('setting-user-role').value.trim();
+
+        if (!userName) {
+            alert('Please enter a display name!');
+            return;
+        }
+
+        const activeUser = Storage.getActiveUser();
+        if (activeUser) {
+            activeUser.name = userName;
+            activeUser.role = userRole || 'Student';
+            localStorage.setItem('studyzone_active_user', JSON.stringify(activeUser));
+        }
 
         Storage.updateSettingKey('userName', userName);
         Storage.updateSettingKey('userRole', userRole);
 
-        // Update UI Badges across app
-        const sidebarName = document.querySelector('.user-name');
-        const sidebarRole = document.querySelector('.user-status-badge');
-        if (sidebarName) sidebarName.textContent = userName;
-        if (sidebarRole) sidebarRole.textContent = userRole;
-
-        // Re-render Dashboard greeting
-        if (window.Dashboard && typeof window.Dashboard.renderDashboard === 'function') {
-            window.Dashboard.renderDashboard();
+        if (window.AppRouter && typeof window.AppRouter.checkAuthStatus === 'function') {
+            window.AppRouter.checkAuthStatus();
         }
-
-        alert('Profile preferences saved successfully!');
     },
 
-    // 2. Dynamic Accent Color Palette
     saveAccentColor(colorHex) {
         Storage.updateSettingKey('accentColor', colorHex);
         this.applyAccentColor(colorHex);
@@ -129,9 +134,10 @@ const SettingsManager = {
 
     applyAccentColor(colorHex) {
         document.documentElement.style.setProperty('--accent-blue', colorHex);
+        document.documentElement.style.setProperty('--accent-primary', colorHex);
+        document.documentElement.style.setProperty('--accent-glow', `${colorHex}40`);
     },
 
-    // 3. Export All Workspace Data (JSON)
     exportAllDataJSON() {
         const data = {};
         for (let i = 0; i < localStorage.length; i++) {
@@ -154,7 +160,6 @@ const SettingsManager = {
         URL.revokeObjectURL(link.href);
     },
 
-    // 4. Import Workspace Data (JSON)
     importDataJSON(event) {
         const file = event.target.files[0];
         if (!file) return;
@@ -172,16 +177,15 @@ const SettingsManager = {
                     }
                 }
 
-                alert(`Successfully imported ${count} modules! Reloading workspace...`);
+                alert(`Successfully imported workspace backup! Reloading...`);
                 window.location.reload();
             } catch (err) {
-                alert('Invalid JSON backup file. Please select a valid StudyZone backup file.');
+                alert('Invalid JSON backup file.');
             }
         };
         reader.readAsText(file);
     },
 
-    // 5. Export All Notes as .txt
     exportAllNotesTxt() {
         const notes = Storage.loadNotes();
         if (notes.length === 0) {
@@ -203,10 +207,9 @@ const SettingsManager = {
         URL.revokeObjectURL(link.href);
     },
 
-    // 6. Danger Zone Factory Reset
     factoryReset() {
         Storage.clearAllData();
-        alert('All custom data cleared! Reloading workspace with clean starter defaults...');
+        alert('Workspace reset to zero! Reloading clean workspace...');
         window.location.reload();
     }
 };

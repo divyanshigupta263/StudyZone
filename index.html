@@ -22,10 +22,10 @@
 <body>
 
     <div class="app-shell">
-        <!-- Sidebar Backdrop for Mobile -->
+        <!-- Sidebar Backdrop Overlay for Mobile -->
         <div class="sidebar-backdrop" id="sidebar-backdrop"></div>
 
-        <!-- Sidebar Navigation -->
+        <!-- Sidebar Navigation Drawer -->
         <aside class="sidebar" id="app-sidebar">
             <div class="sidebar-header">
                 <div class="brand-logo">
@@ -37,7 +37,6 @@
                     </div>
                     <span>StudyZone</span>
                 </div>
-                <span class="version-tag">v1.0</span>
             </div>
 
             <nav class="sidebar-nav">
@@ -76,7 +75,7 @@
                 <div class="nav-section-label">Tools</div>
                 <a href="#" class="nav-link" data-view="pomodoro">
                     <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline></svg>
-                    <span>Pomodoro Timer</span>
+                    <span>Focus Timer</span>
                 </a>
                 <a href="#" class="nav-link" data-view="settings">
                     <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"></circle><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path></svg>
@@ -86,10 +85,10 @@
 
             <div class="sidebar-footer">
                 <div class="user-profile-card">
-                    <img src="https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=250&q=80" alt="User Profile" class="user-avatar">
+                    <div class="user-avatar-badge" id="sidebar-user-avatar">🌸</div>
                     <div class="user-info">
-                        <span class="user-name">Alex Rivera</span>
-                        <span class="user-status-badge">Active Student</span>
+                        <span class="user-name">Guest User</span>
+                        <span class="user-status-badge">Not Signed In</span>
                     </div>
                 </div>
             </div>
@@ -111,6 +110,13 @@
                 </div>
 
                 <div class="topbar-right">
+                    <!-- Flame Streak Counter Badge -->
+                    <div class="streak-badge" id="app-streak-badge" title="Daily Activity Streak">
+                        <span class="streak-icon">🔥</span>
+                        <span class="streak-count" id="streak-count-val">0</span>
+                        <span class="streak-label">Day Streak</span>
+                    </div>
+
                     <!-- Global Search Input -->
                     <div class="search-container">
                         <svg class="search-icon" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
@@ -122,6 +128,12 @@
                     <button class="btn-icon" id="theme-toggle-btn" aria-label="Toggle Theme">
                         <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="5"></circle><line x1="12" y1="1" x2="12" y2="3"></line><line x1="12" y1="21" x2="12" y2="23"></line><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line><line x1="1" y1="12" x2="3" y2="12"></line><line x1="21" y1="12" x2="23" y2="12"></line><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line></svg>
                         <span class="theme-btn-label">Light Mode</span>
+                    </button>
+
+                    <!-- Topbar Sign In / Create Account Button -->
+                    <button class="btn-primary" id="topbar-auth-btn" style="background: linear-gradient(135deg, var(--accent-blue), #8B5CF6); border: none; font-weight: 700; display: inline-flex; gap: 6px; align-items: center;">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4"></path><polyline points="10 17 15 12 10 7"></polyline><line x1="15" y1="12" x2="3" y2="12"></line></svg>
+                        <span>Sign In / Join</span>
                     </button>
 
                     <!-- Quick Action -->
@@ -139,7 +151,7 @@
                 <section class="view-section active" id="view-dashboard">
                     <div class="dashboard-header-container">
                         <div class="dashboard-title-group">
-                            <h1 id="dashboard-greeting">Good morning, Alex ☀️</h1>
+                            <h1 id="dashboard-greeting">Good morning ☀️</h1>
                             <div class="dashboard-date-badge">
                                 <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line></svg>
                                 <span id="dashboard-date">Loading date & time...</span>
@@ -178,8 +190,8 @@
                                 <span class="metric-title">Pending Tasks</span>
                                 <div class="metric-icon-badge"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 11l3 3L22 4"></path><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"></path></svg></div>
                             </div>
-                            <div class="metric-value-group"><span class="metric-value" id="stat-pending-tasks">3</span></div>
-                            <div class="metric-subtitle" id="stat-pending-subtitle">2 high priority</div>
+                            <div class="metric-value-group"><span class="metric-value" id="stat-pending-tasks">0</span></div>
+                            <div class="metric-subtitle" id="stat-pending-subtitle">0 high priority</div>
                         </div>
 
                         <div class="metric-card assignments searchable-item" data-switch-view="assignments" style="cursor: pointer;">
@@ -187,17 +199,19 @@
                                 <span class="metric-title">Assignments</span>
                                 <div class="metric-icon-badge"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"></path></svg></div>
                             </div>
-                            <div class="metric-value-group"><span class="metric-value" id="stat-assignments-count">2</span></div>
+                            <div class="metric-value-group"><span class="metric-value" id="stat-assignments-count">0</span></div>
                             <div class="metric-subtitle" id="stat-assignments-subtitle">Due within 7 days</div>
                         </div>
 
                         <div class="metric-card attendance searchable-item" data-switch-view="attendance" style="cursor: pointer;">
                             <div class="metric-header">
                                 <span class="metric-title">Attendance</span>
-                                <span class="badge-status safe" id="stat-attendance-badge">Safe</span>
+                                <div class="metric-icon-badge">
+                                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path><polyline points="22 4 12 14.01 9 11.01"></polyline></svg>
+                                </div>
                             </div>
-                            <div class="metric-value-group"><span class="metric-value" id="stat-attendance-pct">91%</span></div>
-                            <div class="metric-subtitle">Target: &ge; 75%</div>
+                            <div class="metric-value-group"><span class="metric-value" id="stat-attendance-pct">0%</span></div>
+                            <div class="metric-subtitle">Target: &ge; 75% • <span class="badge-status neutral" id="stat-attendance-badge">No Data</span></div>
                         </div>
 
                         <div class="metric-card gpa searchable-item" data-switch-view="cgpa" style="cursor: pointer;">
@@ -205,8 +219,8 @@
                                 <span class="metric-title">CGPA Score</span>
                                 <div class="metric-icon-badge"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="20" x2="18" y2="10"></line><line x1="12" y1="20" x2="12" y2="4"></line><line x1="6" y1="20" x2="6" y2="14"></line></svg></div>
                             </div>
-                            <div class="metric-value-group"><span class="metric-value" id="stat-cgpa-val">3.88</span></div>
-                            <div class="metric-subtitle" id="stat-cgpa-subtitle">Semester 5</div>
+                            <div class="metric-value-group"><span class="metric-value" id="stat-cgpa-val">0.00</span></div>
+                            <div class="metric-subtitle" id="stat-cgpa-subtitle">No Semesters</div>
                         </div>
 
                         <div class="metric-card hours searchable-item" data-switch-view="pomodoro" style="cursor: pointer;">
@@ -214,7 +228,7 @@
                                 <span class="metric-title">Study Time</span>
                                 <div class="metric-icon-badge"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline></svg></div>
                             </div>
-                            <div class="metric-value-group"><span class="metric-value" id="stat-focus-time">1.5h</span></div>
+                            <div class="metric-value-group"><span class="metric-value" id="stat-focus-time">0m</span></div>
                             <div class="metric-subtitle">Logged today</div>
                         </div>
                     </div>
@@ -223,10 +237,7 @@
                     <div class="dashboard-grid-2col">
                         <div class="dashboard-widget">
                             <div class="widget-header">
-                                <h2 class="widget-title">
-                                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2v20M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"></path></svg>
-                                    Top Priority Tasks
-                                </h2>
+                                <h2 class="widget-title">Top Priority Tasks</h2>
                                 <span class="widget-action" data-switch-view="tasks">View All &rarr;</span>
                             </div>
                             <div class="dash-task-list" id="top-priority-tasks-list"></div>
@@ -260,13 +271,7 @@
                             <div class="todo-input-row">
                                 <input type="text" class="form-input-main" id="task-title-input" placeholder="What needs to be done? (e.g. Complete Lab 4 Report)" required>
                                 
-                                <select class="form-select-sm" id="task-course-input">
-                                    <option value="CS301">CS301 — Operating Systems</option>
-                                    <option value="MATH204">MATH204 — Linear Algebra</option>
-                                    <option value="CS302">CS302 — Databases</option>
-                                    <option value="CS405">CS405 — Web Engineering</option>
-                                    <option value="General" selected>General Study</option>
-                                </select>
+                                <input type="text" class="form-input-main" id="task-course-input" placeholder="Subject / Course (e.g. General)">
 
                                 <select class="form-select-sm" id="task-priority-input">
                                     <option value="low">Low Priority 🟢</option>
@@ -274,7 +279,7 @@
                                     <option value="high">High Priority 🔴</option>
                                 </select>
 
-                                <input type="date" class="form-date-sm" id="task-date-input">
+                                <input type="date" class="form-date-sm" id="task-date-input" min="2020-01-01" max="2099-12-31">
 
                                 <button type="submit" class="btn-primary">Add Task</button>
                             </div>
@@ -326,12 +331,8 @@
                     </div>
 
                     <div class="notes-toolbar">
-                        <div class="notes-filter-pills">
+                        <div class="notes-filter-pills" id="notes-filter-pills-container">
                             <button class="note-cat-pill active" data-cat="all">All Notes</button>
-                            <button class="note-cat-pill" data-cat="CS301">CS301</button>
-                            <button class="note-cat-pill" data-cat="MATH204">MATH204</button>
-                            <button class="note-cat-pill" data-cat="CS302">CS302</button>
-                            <button class="note-cat-pill" data-cat="CS405">CS405</button>
                         </div>
 
                         <div class="notes-search-box">
@@ -421,7 +422,6 @@
                     <div class="section-header">
                         <div class="section-title-group">
                             <h1>Weekly Class Timetable</h1>
-                            <p class="section-subtitle">Google & Apple Calendar inspired weekly class schedule blocks.</p>
                         </div>
                         <button class="btn-primary" id="btn-new-class">
                             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
@@ -437,57 +437,61 @@
                 <section class="view-section" id="view-attendance">
                     <div class="section-header">
                         <div class="section-title-group">
-                            <h1>Attendance Tracker & Smart Bunk Advice</h1>
-                            <p class="section-subtitle">Log class attendance, calculate minimum threshold advice, and use what-if scenarios.</p>
+                            <h1 id="att-section-title">Attendance & Daily Study Goals</h1>
+                            <p class="section-subtitle" id="att-section-subtitle">Track lecture attendance & daily study session goals.</p>
                         </div>
                         <button class="btn-primary" id="btn-add-subject">
                             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
-                            <span>Add Subject</span>
+                            <span id="btn-add-subject-text">Add Subject</span>
                         </button>
                     </div>
 
-                    <div class="att-overview-card">
-                        <div class="att-overview-header">
-                            <h2 class="att-overview-title">Overall Attendance Health</h2>
-                            <span class="badge-status safe" id="att-overall-badge">SAFE</span>
-                        </div>
-                        <div class="att-overview-value-group">
-                            <span class="att-overview-pct" id="att-overall-pct">0.0%</span>
-                            <span class="att-overview-subtext" id="att-overall-text">Calculating status...</span>
-                        </div>
-                        <div class="att-overall-progress-bg">
-                            <div class="att-overall-progress-fill" id="att-overall-progress" style="width: 0%;"></div>
-                        </div>
+                    <!-- Sub-Mode Icons / Tabs -->
+                    <div class="cgpa-mode-tabs" style="margin-bottom:20px;">
+                        <button class="cgpa-tab-btn active" id="att-tab-lectures" onclick="AttendanceManager.switchTab('lectures')">
+                            <span>🏫 Class Lectures (Attendance)</span>
+                        </button>
+                        <button class="cgpa-tab-btn" id="att-tab-study" onclick="AttendanceManager.switchTab('study')">
+                            <span>⏱️ Study Hours Goal (Daily Tracker)</span>
+                        </button>
                     </div>
 
-                    <div class="att-content-grid">
-                        <div class="att-cards-grid" id="attendance-cards-grid"></div>
-
-                        <div class="scratchpad-card">
-                            <h3 class="scratchpad-title">🧮 What-If Calculator</h3>
-                            <p style="font-size:0.78rem; color:var(--text-secondary); margin-bottom:14px; line-height:1.4;">
-                                Test hypothetical scenarios without altering your saved records.
-                            </p>
-
-                            <div style="display:flex; flex-direction:column; gap:10px;">
-                                <div>
-                                    <label style="font-size:0.78rem; font-weight:600; color:var(--text-secondary);">Attended Classes</label>
-                                    <input type="number" class="form-input-main" id="scratch-attended" placeholder="e.g. 18" style="width:100%; margin-top:3px;">
-                                </div>
-                                <div>
-                                    <label style="font-size:0.78rem; font-weight:600; color:var(--text-secondary);">Total Classes</label>
-                                    <input type="number" class="form-input-main" id="scratch-total" placeholder="e.g. 24" style="width:100%; margin-top:3px;">
-                                </div>
-                                <div>
-                                    <label style="font-size:0.78rem; font-weight:600; color:var(--text-secondary);">Target Threshold (%)</label>
-                                    <input type="number" class="form-input-main" id="scratch-target" value="75" style="width:100%; margin-top:3px;">
-                                </div>
+                    <!-- Mode 1: Class Lectures Panel -->
+                    <div id="att-panel-lectures">
+                        <div class="att-overview-card">
+                            <div class="att-overview-header">
+                                <h2 class="att-overview-title">Overall Attendance Health</h2>
+                                <span class="badge-status safe" id="att-overall-badge">SAFE</span>
                             </div>
-
-                            <div class="scratch-result-box" id="scratch-result-box">
-                                <span style="font-size:0.78rem; color:var(--text-muted);">Enter class counts to calculate what-if scenarios.</span>
+                            <div class="att-overview-value-group">
+                                <span class="att-overview-pct" id="att-overall-pct">0.0%</span>
+                                <span class="att-overview-subtext" id="att-overall-text">Calculating status...</span>
+                            </div>
+                            <div class="att-overall-progress-bg">
+                                <div class="att-overall-progress-fill" id="att-overall-progress" style="width: 0%;"></div>
                             </div>
                         </div>
+
+                        <div class="att-cards-grid" id="attendance-cards-grid"></div>
+                    </div>
+
+                    <!-- Mode 2: Daily Study Hours Panel -->
+                    <div id="att-panel-study" style="display:none;">
+                        <div class="att-overview-card" style="border-left: 4px solid var(--accent-purple);">
+                            <div class="att-overview-header">
+                                <h2 class="att-overview-title">Today's Daily Study Progress</h2>
+                                <span class="badge-status safe" id="study-overall-badge">IN PROGRESS</span>
+                            </div>
+                            <div class="att-overview-value-group">
+                                <span class="att-overview-pct" id="study-overall-pct" style="color:var(--accent-purple);">0.0h</span>
+                                <span class="att-overview-subtext" id="study-overall-text">Total logged study time today</span>
+                            </div>
+                            <div class="att-overall-progress-bg">
+                                <div class="att-overall-progress-fill" id="study-overall-progress" style="width: 0%; background-color:var(--accent-purple);"></div>
+                            </div>
+                        </div>
+
+                        <div class="att-cards-grid" id="study-cards-grid"></div>
                     </div>
                 </section>
 
@@ -495,13 +499,8 @@
                 <section class="view-section" id="view-cgpa">
                     <div class="section-header">
                         <div class="section-title-group">
-                            <h1>CGPA & Semester GPA Calculator</h1>
-                            <p class="section-subtitle">Analytical grade point precision, cumulative tracking, and target predictor.</p>
+                            <h1>GPA Calculator</h1>
                         </div>
-                        <button class="btn-primary" id="btn-export-cgpa">
-                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="7 10 12 15 17 10"></polyline><line x1="12" y1="15" x2="12" y2="3"></line></svg>
-                            <span>Export Transcript</span>
-                        </button>
                     </div>
 
                     <div class="cgpa-mode-tabs">
@@ -511,29 +510,43 @@
                     </div>
 
                     <div class="cgpa-panel active" id="panel-sgpa">
+                        <div style="margin-bottom:16px; display:flex; align-items:center; gap:12px;">
+                            <label style="font-size:0.86rem; font-weight:700; color:var(--text-secondary);">Select Semester:</label>
+                            <select class="form-select-sm" id="sgpa-sem-selector" style="min-width:160px; height:38px; font-weight:600;">
+                                <option value="Sem 1">Semester 1</option>
+                                <option value="Sem 2">Semester 2</option>
+                                <option value="Sem 3">Semester 3</option>
+                                <option value="Sem 4">Semester 4</option>
+                                <option value="Sem 5">Semester 5</option>
+                                <option value="Sem 6">Semester 6</option>
+                                <option value="Sem 7">Semester 7</option>
+                                <option value="Sem 8">Semester 8</option>
+                            </select>
+                        </div>
+
                         <div class="score-highlight-card">
                             <div class="score-main-group">
                                 <div class="score-big-val" id="sgpa-val-display">0.00</div>
                                 <div class="score-meta-group">
-                                    <span class="score-label">Calculated SGPA</span>
-                                    <span class="score-subtext">Current Semester Grade Point</span>
+                                    <span class="score-label" id="sgpa-card-title">Semester 1 GPA (out of 10)</span>
+                                    <span class="score-subtext" id="sgpa-standing-text">Semester Performance</span>
                                 </div>
                             </div>
                             <div style="display:flex; gap:20px;">
                                 <div>
-                                    <span class="score-label">Total Credits</span>
-                                    <div style="font-size:1.2rem; font-weight:700; color:var(--text-primary);" id="sgpa-credits-display">0</div>
+                                    <span class="score-label">Marks Obtained</span>
+                                    <div style="font-size:1.2rem; font-weight:700; color:var(--text-primary);" id="sgpa-obtained-display">0</div>
                                 </div>
                                 <div>
-                                    <span class="score-label">Grade Points</span>
-                                    <div style="font-size:1.2rem; font-weight:700; color:var(--text-primary);" id="sgpa-points-display">0.0</div>
+                                    <span class="score-label">Total Marks</span>
+                                    <div style="font-size:1.2rem; font-weight:700; color:var(--text-primary);" id="sgpa-total-display">0</div>
                                 </div>
                             </div>
                         </div>
 
                         <div style="margin-bottom:12px; display:flex; justify-content:space-between; align-items:center;">
-                            <h3 style="font-size:0.95rem; font-weight:700; color:var(--text-primary);">Course Grade Breakdown</h3>
-                            <button class="btn-secondary-sm" id="btn-add-course-row">+ Add Course</button>
+                            <h3 style="font-size:0.95rem; font-weight:700; color:var(--text-primary);" id="sgpa-breakdown-title">Semester 1 Subject Marks Breakdown</h3>
+                            <button class="btn-secondary-sm" id="btn-add-course-row">+ Add Subject</button>
                         </div>
 
                         <div class="cgpa-rows-container" id="sgpa-courses-list"></div>
@@ -544,13 +557,19 @@
                             <div class="score-main-group">
                                 <div class="score-big-val" id="cgpa-val-display">0.00</div>
                                 <div class="score-meta-group">
-                                    <span class="score-label">Cumulative CGPA</span>
+                                    <span class="score-label">Cumulative CGPA (out of 10)</span>
                                     <span class="score-subtext" id="cgpa-standing-display">Academic Standing</span>
                                 </div>
                             </div>
-                            <div>
-                                <span class="score-label">Total Credits Earned</span>
-                                <div style="font-size:1.2rem; font-weight:700; color:var(--text-primary);" id="cgpa-credits-display">0</div>
+                            <div style="display:flex; gap:20px;">
+                                <div>
+                                    <span class="score-label">Semesters Recorded</span>
+                                    <div style="font-size:1.2rem; font-weight:700; color:var(--text-primary);" id="cgpa-sems-count-display">0</div>
+                                </div>
+                                <div>
+                                    <span class="score-label">Total Marks</span>
+                                    <div style="font-size:1.2rem; font-weight:700; color:var(--text-primary);" id="cgpa-total-display">0</div>
+                                </div>
                             </div>
                         </div>
 
@@ -568,40 +587,40 @@
                                 <h2>Target CGPA Parameters</h2>
                                 <div style="display:flex; flex-direction:column; gap:12px;">
                                     <div>
-                                        <label style="font-size:0.8rem; font-weight:600; color:var(--text-secondary);">Current CGPA</label>
-                                        <input type="number" class="form-input-main" id="target-cur-gpa" step="0.01" min="0" max="4" style="width:100%; margin-top:4px;">
+                                        <label style="font-size:0.8rem; font-weight:600; color:var(--text-secondary);">Current CGPA (out of 10)</label>
+                                        <input type="number" class="form-input-main" id="target-cur-gpa" placeholder="e.g. 8.50" step="0.01" min="0" max="10" style="width:100%; margin-top:4px;">
                                     </div>
                                     <div style="display:flex; gap:10px;">
                                         <div style="flex:1;">
                                             <label style="font-size:0.8rem; font-weight:600; color:var(--text-secondary);">Semesters Completed</label>
-                                            <input type="number" class="form-input-main" id="target-cur-sems" min="0" max="12" style="width:100%; margin-top:4px;">
+                                            <input type="number" class="form-input-main" id="target-cur-sems" placeholder="e.g. 4" min="0" max="12" style="width:100%; margin-top:4px;">
                                         </div>
                                         <div style="flex:1;">
                                             <label style="font-size:0.8rem; font-weight:600; color:var(--text-secondary);">Total Sems in Degree</label>
-                                            <input type="number" class="form-input-main" id="target-total-sems" value="8" min="1" max="12" style="width:100%; margin-top:4px;">
+                                            <input type="number" class="form-input-main" id="target-total-sems" placeholder="e.g. 8" min="1" max="12" style="width:100%; margin-top:4px;">
                                         </div>
                                     </div>
                                     <div>
-                                        <label style="font-size:0.8rem; font-weight:600; color:var(--text-secondary);">Desired Target CGPA</label>
-                                        <input type="number" class="form-input-main" id="target-desired-gpa" value="3.80" step="0.01" min="0" max="4" style="width:100%; margin-top:4px;">
+                                        <label style="font-size:0.8rem; font-weight:600; color:var(--text-secondary);">Desired Target CGPA (out of 10)</label>
+                                        <input type="number" class="form-input-main" id="target-desired-gpa" placeholder="e.g. 9.00" step="0.01" min="0" max="10" style="width:100%; margin-top:4px;">
                                     </div>
                                 </div>
                             </div>
 
                             <div class="target-result-card safe" id="target-result-box">
                                 <div class="target-res-header">Required Future Average GPA</div>
-                                <div class="target-res-val" style="color:var(--accent-blue);">3.80</div>
-                                <p>Adjust inputs to calculate required future performance.</p>
+                                <div class="target-res-val" style="color:var(--accent-blue);">0.00</div>
+                                <p>Enter your target parameters to calculate required future performance.</p>
                             </div>
                         </div>
                     </div>
                 </section>
 
-                <!-- 8. Pomodoro Focus View -->
+                <!-- 8. Focus Timer View -->
                 <section class="view-section" id="view-pomodoro">
                     <div class="section-header">
                         <div class="section-title-group">
-                            <h1>Pomodoro Focus Timer</h1>
+                            <h1>Focus Timer</h1>
                             <p class="section-subtitle">Tranquil, distraction-free study countdown with custom intervals & audio chimes.</p>
                         </div>
                         <button class="btn-secondary-sm" id="btn-timer-settings" style="height:36px;">
@@ -674,7 +693,6 @@
                     </div>
 
                     <div class="settings-grid">
-                        <!-- 1. Student Profile Settings -->
                         <div class="settings-card">
                             <div class="settings-card-header">
                                 <h2 class="settings-card-title">👤 Student Profile</h2>
@@ -697,7 +715,6 @@
                             </form>
                         </div>
 
-                        <!-- 2. Appearance & Accent Color -->
                         <div class="settings-card">
                             <div class="settings-card-header">
                                 <h2 class="settings-card-title">🎨 Appearance & Theme Accents</h2>
@@ -718,7 +735,6 @@
                             </div>
                         </div>
 
-                        <!-- 3. Academic & Attendance Preferences -->
                         <div class="settings-card">
                             <div class="settings-card-header">
                                 <h2 class="settings-card-title">🎓 Academic Preferences</h2>
@@ -729,70 +745,36 @@
                                     <span class="setting-label">Minimum Attendance Criteria</span>
                                     <span class="setting-desc">Required percentage threshold to maintain 'SAFE' standing status.</span>
                                 </div>
-                                <select class="form-select-sm" id="setting-att-target" style="width:120px;">
-                                    <option value="75">75% (Standard)</option>
-                                    <option value="80">80% (Strict)</option>
-                                    <option value="85">85% (High)</option>
-                                </select>
+                                <input type="number" class="form-input-main" id="setting-att-target" placeholder="e.g. 75" min="1" max="100" style="width:120px;">
                             </div>
                         </div>
 
-                        <!-- 4. Data Backup, Export & Import -->
-                        <div class="settings-card">
-                            <div class="settings-card-header">
-                                <h2 class="settings-card-title">💾 Data Backup & Restore</h2>
-                                <p class="settings-card-subtitle">Export or import your complete StudyZone workspace JSON file.</p>
-                            </div>
-                            <div style="display:flex; flex-direction:column; gap:14px;">
-                                <div class="setting-row">
-                                    <div class="setting-info">
-                                        <span class="setting-label">Export All Data (JSON)</span>
-                                        <span class="setting-desc">Download a complete JSON snapshot of tasks, notes, assignments, timetable, and stats.</span>
-                                    </div>
-                                    <button class="btn-secondary-sm" id="btn-export-json" style="height:38px;">📥 Export JSON</button>
-                                </div>
-
-                                <div class="setting-row">
-                                    <div class="setting-info">
-                                        <span class="setting-label">Import Data (JSON)</span>
-                                        <span class="setting-desc">Restore your workspace from a previously exported JSON backup file.</span>
-                                    </div>
-                                    <label class="btn-secondary-sm" style="height:38px; display:inline-flex; align-items:center; cursor:pointer;">
-                                        📤 Import JSON
-                                        <input type="file" id="input-import-json" accept=".json" style="display:none;">
-                                    </label>
-                                </div>
-
-                                <div class="setting-row">
-                                    <div class="setting-info">
-                                        <span class="setting-label">Export All Notes as Text</span>
-                                        <span class="setting-desc">Download all your study notes compiled into a single `.txt` document.</span>
-                                    </div>
-                                    <button class="btn-secondary-sm" id="btn-export-all-notes" style="height:38px;">📝 Export Notes (.txt)</button>
-                                </div>
-                            </div>
-                        </div>
-
-                        <!-- 5. Danger Zone -->
-                        <div class="settings-card danger-zone">
-                            <div class="settings-card-header">
-                                <h2 class="settings-card-title" style="color:var(--accent-rose);">⚠️ Danger Zone</h2>
-                                <p class="settings-card-subtitle">Irreversible workspace reset options.</p>
-                            </div>
-                            <div class="setting-row">
-                                <div class="setting-info">
-                                    <span class="setting-label">Factory Reset Workspace</span>
-                                    <span class="setting-desc">Wipe all local storage entries and restore fresh starter demo data.</span>
-                                </div>
-                                <button class="btn-danger" id="btn-factory-reset">Reset All Data</button>
-                            </div>
-                        </div>
                     </div>
                 </section>
 
             </div>
         </main>
     </div>
+
+    <!-- Mobile Bottom Navigation Bar (Phone Screens) -->
+    <nav class="mobile-bottom-nav">
+        <button class="mobile-nav-item active" data-view="dashboard">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7"></rect><rect x="14" y="3" width="7" height="7"></rect><rect x="14" y="14" width="7" height="7"></rect><rect x="3" y="14" width="7" height="7"></rect></svg>
+            <span>Home</span>
+        </button>
+        <button class="mobile-nav-item" data-view="tasks">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 11l3 3L22 4"></path><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"></path></svg>
+            <span>Tasks</span>
+        </button>
+        <button class="mobile-nav-item" data-view="notes">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path></svg>
+            <span>Notes</span>
+        </button>
+        <button class="mobile-nav-item" data-view="pomodoro">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline></svg>
+            <span>Focus Timer</span>
+        </button>
+    </nav>
 
     <!-- Modals -->
     <!-- Task Edit Modal -->
@@ -810,13 +792,7 @@
                     <div style="display:flex; gap:10px;">
                         <div style="flex:1;">
                             <label style="font-size:0.8rem; font-weight:600; color:var(--text-secondary);">Course / Subject</label>
-                            <select class="form-select-sm" id="edit-task-course" style="width:100%; margin-top:4px;">
-                                <option value="CS301">CS301 — Operating Systems</option>
-                                <option value="MATH204">MATH204 — Linear Algebra</option>
-                                <option value="CS302">CS302 — Databases</option>
-                                <option value="CS405">CS405 — Web Engineering</option>
-                                <option value="General">General Study</option>
-                            </select>
+                            <input type="text" class="form-input-main" id="edit-task-course" placeholder="Subject / Course (e.g. General)" style="width:100%; margin-top:4px;">
                         </div>
 
                         <div style="flex:1;">
@@ -831,7 +807,7 @@
 
                     <div>
                         <label style="font-size:0.8rem; font-weight:600; color:var(--text-secondary);">Due Date</label>
-                        <input type="date" class="form-date-sm" id="edit-task-date" style="width:100%; margin-top:4px;">
+                        <input type="date" class="form-date-sm" id="edit-task-date" min="2020-01-01" max="2099-12-31" style="width:100%; margin-top:4px;">
                     </div>
 
                     <div style="display:flex; justify-content:flex-end; gap:10px; margin-top:10px;">
@@ -860,13 +836,7 @@
                     <div style="display:flex; gap:12px; align-items:center;">
                         <div style="flex:1;">
                             <label style="font-size:0.8rem; font-weight:600; color:var(--text-secondary);">Subject / Course</label>
-                            <select class="form-select-sm" id="note-course-input" style="width:100%; margin-top:4px;">
-                                <option value="CS301">CS301 — Operating Systems</option>
-                                <option value="MATH204">MATH204 — Linear Algebra</option>
-                                <option value="CS302">CS302 — Databases</option>
-                                <option value="CS405">CS405 — Web Engineering</option>
-                                <option value="General">General Study</option>
-                            </select>
+                            <input type="text" class="form-input-main" id="note-course-input" placeholder="e.g. Mathematics or CS301" style="width:100%; margin-top:4px;">
                         </div>
 
                         <div style="display:flex; align-items:center; gap:8px; margin-top:20px;">
@@ -942,18 +912,12 @@
                     <div style="display:flex; gap:12px;">
                         <div style="flex:1;">
                             <label style="font-size:0.8rem; font-weight:600; color:var(--text-secondary);">Course / Subject</label>
-                            <select class="form-select-sm" id="assign-course-input" style="width:100%; margin-top:4px;">
-                                <option value="CS301">CS301 — Operating Systems</option>
-                                <option value="MATH204">MATH204 — Linear Algebra</option>
-                                <option value="CS302">CS302 — Databases</option>
-                                <option value="CS405">CS405 — Web Engineering</option>
-                                <option value="General">General Study</option>
-                            </select>
+                            <input type="text" class="form-input-main" id="assign-course-input" placeholder="e.g. Mathematics or CS301" style="width:100%; margin-top:4px;">
                         </div>
 
                         <div style="flex:1;">
                             <label style="font-size:0.8rem; font-weight:600; color:var(--text-secondary);">Due Date</label>
-                            <input type="date" class="form-date-sm" id="assign-date-input" required style="width:100%; margin-top:4px;">
+                            <input type="date" class="form-date-sm" id="assign-date-input" min="2020-01-01" max="2099-12-31" required style="width:100%; margin-top:4px;">
                         </div>
                     </div>
 
@@ -1018,11 +982,10 @@
                         <div style="flex:1;">
                             <label style="font-size:0.8rem; font-weight:600; color:var(--text-secondary);">Color Accent</label>
                             <select class="form-select-sm" id="class-color-input" style="width:100%; margin-top:4px;">
-                                <option value="blue">Blue (Lecture)</option>
-                                <option value="green">Green (Lab)</option>
-                                <option value="purple">Purple (Math)</option>
-                                <option value="amber">Amber (Workshop)</option>
-                                <option value="rose">Rose (Seminar)</option>
+                                <option value="blue">Blue 🔵 (Lecture)</option>
+                                <option value="green">Green 🟢 (Lab)</option>
+                                <option value="amber">Amber / Orange 🟠 (Workshop)</option>
+                                <option value="rose">Rose / Red 🔴 (Seminar)</option>
                             </select>
                         </div>
                     </div>
@@ -1069,21 +1032,14 @@
     <div class="modal-backdrop" id="att-modal-backdrop">
         <div class="modal-container" style="max-width: 480px;">
             <div class="modal-header">
-                <h3 id="att-modal-title">Add New Subject</h3>
+                <h3 id="att-modal-title">Add New Class Subject</h3>
                 <button class="btn-close-modal" id="close-att-modal">&times;</button>
             </div>
             <form id="att-editor-form" class="todo-input-form">
                 <div style="display:flex; flex-direction:column; gap:14px;">
-                    <div style="display:flex; gap:12px;">
-                        <div style="width: 120px;">
-                            <label style="font-size:0.8rem; font-weight:600; color:var(--text-secondary);">Subject Code</label>
-                            <input type="text" class="form-input-main" id="att-code-input" placeholder="e.g. CS301" required style="width:100%; margin-top:4px;">
-                        </div>
-
-                        <div style="flex:1;">
-                            <label style="font-size:0.8rem; font-weight:600; color:var(--text-secondary);">Subject Name</label>
-                            <input type="text" class="form-input-main" id="att-name-input" placeholder="e.g. Operating Systems" required style="width:100%; margin-top:4px;">
-                        </div>
+                    <div>
+                        <label style="font-size:0.8rem; font-weight:600; color:var(--text-secondary);">Subject Name</label>
+                        <input type="text" class="form-input-main" id="att-name-input" placeholder="e.g. Operating Systems" required style="width:100%; margin-top:4px;">
                     </div>
 
                     <div style="display:flex; gap:12px;">
@@ -1109,6 +1065,119 @@
                     </div>
                 </div>
             </form>
+        </div>
+    </div>
+
+    <!-- Study Goal Modal -->
+    <div class="modal-backdrop" id="study-modal-backdrop">
+        <div class="modal-container" style="max-width: 480px;">
+            <div class="modal-header">
+                <h3 id="study-modal-title">Add Study Goal</h3>
+                <button class="btn-close-modal" id="close-study-modal">&times;</button>
+            </div>
+            <form id="study-editor-form" class="todo-input-form">
+                <div style="display:flex; flex-direction:column; gap:14px;">
+                    <div>
+                        <label style="font-size:0.8rem; font-weight:600; color:var(--text-secondary);">Subject / Topic Name</label>
+                        <input type="text" class="form-input-main" id="study-name-input" placeholder="e.g. Operating Systems" required style="width:100%; margin-top:4px;">
+                    </div>
+
+                    <div style="display:flex; gap:12px;">
+                        <div style="flex:1;">
+                            <label style="font-size:0.8rem; font-weight:600; color:var(--text-secondary);">Daily Target Goal (Hours)</label>
+                            <input type="number" class="form-input-main" id="study-target-input" step="0.5" min="0.5" max="24" placeholder="e.g. 3.0" required style="width:100%; margin-top:4px;">
+                        </div>
+
+                        <div style="flex:1;">
+                            <label style="font-size:0.8rem; font-weight:600; color:var(--text-secondary);">Logged Today (Hours)</label>
+                            <input type="number" class="form-input-main" id="study-logged-input" step="0.25" min="0" max="24" value="0" style="width:100%; margin-top:4px;">
+                        </div>
+                    </div>
+
+                    <div style="display:flex; justify-content:flex-end; gap:10px; margin-top:10px;">
+                        <button type="button" class="btn-secondary-sm" id="cancel-study-modal">Cancel</button>
+                        <button type="submit" class="btn-primary">Save Goal</button>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Log Study Time Modal -->
+    <div class="modal-backdrop" id="log-time-modal-backdrop">
+        <div class="modal-container" style="max-width: 440px; width: 90%; padding: 24px; box-sizing: border-box;">
+            <div class="modal-header">
+                <h3>Log Study Time</h3>
+                <button class="btn-close-modal" id="close-log-modal">&times;</button>
+            </div>
+            <form id="log-time-form" class="todo-input-form" style="width:100%; box-sizing:border-box;">
+                <input type="hidden" id="log-study-id">
+                <div style="display:flex; flex-direction:column; gap:16px; width:100%; box-sizing:border-box;">
+                    <p style="font-size:0.86rem; font-weight:700; color:var(--accent-purple); margin:0;" id="log-study-subject-name">Subject Name</p>
+                    <div style="display:flex; gap:16px; width:100%; box-sizing:border-box; align-items:center;">
+                        <div style="flex:1; min-width:0;">
+                            <label style="font-size:0.8rem; font-weight:600; color:var(--text-secondary); display:block; margin-bottom:4px;">Hours</label>
+                            <input type="number" class="form-input-main" id="log-hours-input" min="0" max="24" style="width:100%; box-sizing:border-box;">
+                        </div>
+                        <div style="flex:1; min-width:0;">
+                            <label style="font-size:0.8rem; font-weight:600; color:var(--text-secondary); display:block; margin-bottom:4px;">Minutes</label>
+                            <input type="number" class="form-input-main" id="log-mins-input" min="0" max="59" step="5" style="width:100%; box-sizing:border-box;">
+                        </div>
+                    </div>
+                    <div style="display:flex; justify-content:flex-end; gap:10px; margin-top:10px;">
+                        <button type="button" class="btn-secondary-sm" id="cancel-log-modal">Cancel</button>
+                        <button type="submit" class="btn-primary">Save Time Log</button>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Custom In-App Focus Timer Completion Modal (Replaces Browser Alert Popup) -->
+    <div class="modal-backdrop" id="timer-complete-modal-backdrop">
+        <div class="modal-container" style="max-width: 420px; text-align: center; padding: 28px;">
+            <div style="font-size: 3.2rem; margin-bottom: 8px;" id="timer-complete-emoji">🎉</div>
+            <h2 id="timer-complete-title" style="font-size: 1.25rem; font-weight: 800; color: var(--text-primary); margin-bottom: 6px;">Focus Session Complete!</h2>
+            <p id="timer-complete-desc" style="font-size: 0.88rem; color: var(--text-secondary); line-height: 1.5; margin-bottom: 20px;">Great job! You finished your study session.</p>
+            
+            <div style="background: var(--bg-main); border: 1px solid var(--border-subtle); border-radius: var(--radius-md); padding: 14px; margin-bottom: 20px; text-align: left;">
+                <div style="font-size: 0.74rem; font-weight: 700; color: var(--text-muted); text-transform: uppercase; margin-bottom: 4px;">Subject / Topic Studied</div>
+                <div style="font-size: 0.95rem; font-weight: 700; color: var(--accent-blue);" id="timer-complete-topic">General Study</div>
+                <div style="font-size: 0.82rem; color: var(--text-secondary); margin-top: 4px;" id="timer-complete-meta">Duration: 25 minutes</div>
+            </div>
+
+            <button class="btn-primary" id="btn-timer-complete-continue" style="width: 100%; height: 42px; justify-content: center; font-weight: 700;">Continue &rarr;</button>
+        </div>
+    </div>
+
+    <!-- Session Info Detail Modal (Clicking Session Dots) -->
+    <div class="modal-backdrop" id="timer-session-info-modal-backdrop">
+        <div class="modal-container" style="max-width: 420px; padding: 24px;">
+            <div class="modal-header">
+                <h3 id="session-info-modal-title">Session Details</h3>
+                <button class="btn-close-modal" id="close-session-info-modal">&times;</button>
+            </div>
+            <div style="display:flex; flex-direction:column; gap:14px; margin-top:10px;">
+                <div style="background:var(--bg-main); border:1px solid var(--border-subtle); border-radius:var(--radius-md); padding:16px;">
+                    <div style="font-size:0.76rem; font-weight:700; color:var(--text-muted); text-transform:uppercase; margin-bottom:4px;">Topic / Subject Studied</div>
+                    <div style="font-size:1rem; font-weight:700; color:var(--accent-blue);" id="session-detail-topic">General Study</div>
+                </div>
+
+                <div style="display:flex; gap:12px;">
+                    <div style="flex:1; background:var(--bg-main); border:1px solid var(--border-subtle); border-radius:var(--radius-md); padding:14px;">
+                        <div style="font-size:0.75rem; font-weight:600; color:var(--text-muted);">Duration Studied</div>
+                        <div style="font-size:1.1rem; font-weight:700; color:var(--text-primary);" id="session-detail-duration">25m</div>
+                    </div>
+                    <div style="flex:1; background:var(--bg-main); border:1px solid var(--border-subtle); border-radius:var(--radius-md); padding:14px;">
+                        <div style="font-size:0.75rem; font-weight:600; color:var(--text-muted);">Completed At</div>
+                        <div style="font-size:0.95rem; font-weight:700; color:var(--text-primary);" id="session-detail-time">11:45 PM</div>
+                    </div>
+                </div>
+
+                <div style="display:flex; justify-content:flex-end; margin-top:6px;">
+                    <button class="btn-secondary-sm" id="close-session-info-btn">Close</button>
+                </div>
+            </div>
         </div>
     </div>
 
@@ -1164,6 +1233,139 @@
                     <button type="button" class="btn-danger" id="confirm-factory-reset">Confirm Factory Reset</button>
                 </div>
             </div>
+        </div>
+    </div>
+
+    <!-- 1. Authentication Modal (Create Account / Sign In) -->
+    <div class="modal-backdrop" id="auth-modal">
+        <div class="modal-container" style="max-width: 440px; position:relative;">
+            <button class="btn-close-modal" id="close-auth-modal" style="position:absolute; top:12px; right:16px; z-index:10;">&times;</button>
+            <div style="display:flex; border-bottom:1px solid var(--border-subtle); margin-bottom:18px; padding-right:30px;">
+                <button class="auth-tab-btn active" data-auth-tab="signin" style="flex:1; padding:10px; background:none; border:none; border-bottom:2px solid var(--accent-blue); color:var(--text-primary); font-weight:700; cursor:pointer;">Sign In</button>
+                <button class="auth-tab-btn" data-auth-tab="signup" style="flex:1; padding:10px; background:none; border:none; color:var(--text-muted); font-weight:700; cursor:pointer;">Create Account</button>
+            </div>
+
+            <!-- Sign In Form -->
+            <form id="form-signin" class="todo-input-form" autocomplete="off">
+                <div style="display:flex; flex-direction:column; gap:14px;">
+                    <div>
+                        <label style="font-size:0.8rem; font-weight:600; color:var(--text-primary);">Email Address or Student ID *</label>
+                        <input type="text" class="form-input-main" id="auth-signin-email" placeholder="e.g. student@university.edu or ID" autocomplete="off" required style="width:100%; margin-top:4px;">
+                    </div>
+                    <div>
+                        <label style="font-size:0.8rem; font-weight:600; color:var(--text-primary);">Password *</label>
+                        <div style="position:relative; margin-top:4px;">
+                            <input type="password" class="form-input-main" id="auth-signin-password" placeholder="Enter your password" autocomplete="current-password" required style="width:100%; padding-right:40px;">
+                            <button type="button" class="btn-toggle-eye" data-target="auth-signin-password" aria-label="Toggle Password Visibility" style="position:absolute; right:10px; top:50%; transform:translateY(-50%); background:none; border:none; color:var(--text-muted); cursor:pointer; font-size:1.1rem; padding:4px;">👁️</button>
+                        </div>
+                    </div>
+                    <div style="display:flex; align-items:center; justify-content:space-between; font-size:0.8rem;">
+                        <label style="display:flex; align-items:center; gap:6px; cursor:pointer; color:var(--text-secondary);">
+                            <input type="checkbox" id="auth-remember-me" checked style="accent-color:var(--accent-blue);"> Remember me
+                        </label>
+                    </div>
+                    <button type="submit" class="btn-primary" style="width:100%; height:42px; justify-content:center; margin-top:10px;">Sign In to Workspace &rarr;</button>
+                </div>
+            </form>
+
+            <!-- Create Account Form -->
+            <form id="form-signup" class="todo-input-form" style="display:none;" autocomplete="off">
+                <div style="display:flex; flex-direction:column; gap:12px;">
+                    <div>
+                        <label style="font-size:0.8rem; font-weight:600; color:var(--text-primary);">Full Name *</label>
+                        <input type="text" class="form-input-main" id="auth-signup-name" placeholder="e.g. Divyanshi" autocomplete="off" required style="width:100%; margin-top:4px;">
+                    </div>
+                    <div>
+                        <label style="font-size:0.8rem; font-weight:600; color:var(--text-primary);">Email Address or Student ID *</label>
+                        <input type="text" class="form-input-main" id="auth-signup-email" placeholder="e.g. student@university.edu or ID" autocomplete="off" required style="width:100%; margin-top:4px;">
+                    </div>
+                    <div>
+                        <label style="font-size:0.8rem; font-weight:600; color:var(--text-primary);">Academic Major / Grade</label>
+                        <input type="text" class="form-input-main" id="auth-signup-role" placeholder="e.g. BCA 2nd Year" autocomplete="off" style="width:100%; margin-top:4px;">
+                    </div>
+                    <div>
+                        <label style="font-size:0.8rem; font-weight:600; color:var(--text-primary);">Password *</label>
+                        <div style="position:relative; margin-top:4px;">
+                            <input type="password" class="form-input-main" id="auth-signup-password" placeholder="Create a password" autocomplete="new-password" required style="width:100%; padding-right:40px;">
+                            <button type="button" class="btn-toggle-eye" data-target="auth-signup-password" aria-label="Toggle Password Visibility" style="position:absolute; right:10px; top:50%; transform:translateY(-50%); background:none; border:none; color:var(--text-muted); cursor:pointer; font-size:1.1rem; padding:4px;">👁️</button>
+                        </div>
+                    </div>
+                    <div>
+                        <label style="font-size:0.8rem; font-weight:600; color:var(--text-primary);">Confirm Password *</label>
+                        <div style="position:relative; margin-top:4px;">
+                            <input type="password" class="form-input-main" id="auth-signup-confirm" placeholder="Confirm your password" autocomplete="new-password" required style="width:100%; padding-right:40px;">
+                            <button type="button" class="btn-toggle-eye" data-target="auth-signup-confirm" aria-label="Toggle Password Visibility" style="position:absolute; right:10px; top:50%; transform:translateY(-50%); background:none; border:none; color:var(--text-muted); cursor:pointer; font-size:1.1rem; padding:4px;">👁️</button>
+                        </div>
+                    </div>
+                    <button type="submit" class="btn-primary" style="width:100%; height:42px; justify-content:center; margin-top:10px;">Create Account &rarr;</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- 2. Student Profile Details & Log Out Modal -->
+    <div class="modal-backdrop" id="profile-modal">
+        <div class="modal-container" style="max-width: 400px; text-align:center;">
+            <div class="modal-header" style="border:none; justify-content:flex-end;">
+                <button class="btn-close-modal" id="close-profile-modal">&times;</button>
+            </div>
+            
+            <div class="user-avatar-badge-lg" id="modal-user-avatar" style="width:72px; height:72px; font-size:2.2rem; display:flex; align-items:center; justify-content:center; border-radius:50%; background:var(--bg-main); border:3px solid var(--accent-blue); margin:0 auto 10px;">🌸</div>
+
+            <!-- Expanded Unique Avatar Palette -->
+            <div style="display:grid; grid-template-columns: repeat(6, 1fr); gap:8px; margin-bottom:16px; padding:8px; background:var(--bg-main); border-radius:var(--radius-md); border:1px solid var(--border-subtle);">
+                <button class="avatar-emoji-opt" data-emoji="🌸" title="Cherry Blossom" style="background:none; border:1px solid var(--border-subtle); border-radius:50%; width:34px; height:34px; font-size:1.1rem; cursor:pointer;">🌸</button>
+                <button class="avatar-emoji-opt" data-emoji="🎓" title="Scholar" style="background:none; border:1px solid var(--border-subtle); border-radius:50%; width:34px; height:34px; font-size:1.1rem; cursor:pointer;">🎓</button>
+                <button class="avatar-emoji-opt" data-emoji="⚡" title="Cyber Pulse" style="background:none; border:1px solid var(--border-subtle); border-radius:50%; width:34px; height:34px; font-size:1.1rem; cursor:pointer;">⚡</button>
+                <button class="avatar-emoji-opt" data-emoji="🚀" title="Space Explorer" style="background:none; border:1px solid var(--border-subtle); border-radius:50%; width:34px; height:34px; font-size:1.1rem; cursor:pointer;">🚀</button>
+                <button class="avatar-emoji-opt" data-emoji="📚" title="Bookworm" style="background:none; border:1px solid var(--border-subtle); border-radius:50%; width:34px; height:34px; font-size:1.1rem; cursor:pointer;">📚</button>
+                <button class="avatar-emoji-opt" data-emoji="🎨" title="Creative Mind" style="background:none; border:1px solid var(--border-subtle); border-radius:50%; width:34px; height:34px; font-size:1.1rem; cursor:pointer;">🎨</button>
+                <button class="avatar-emoji-opt" data-emoji="💻" title="Code Wizard" style="background:none; border:1px solid var(--border-subtle); border-radius:50%; width:34px; height:34px; font-size:1.1rem; cursor:pointer;">💻</button>
+                <button class="avatar-emoji-opt" data-emoji="🧬" title="Genius Mind" style="background:none; border:1px solid var(--border-subtle); border-radius:50%; width:34px; height:34px; font-size:1.1rem; cursor:pointer;">🧬</button>
+                <button class="avatar-emoji-opt" data-emoji="🦁" title="Leader" style="background:none; border:1px solid var(--border-subtle); border-radius:50%; width:34px; height:34px; font-size:1.1rem; cursor:pointer;">🦁</button>
+                <button class="avatar-emoji-opt" data-emoji="🌟" title="Super Star" style="background:none; border:1px solid var(--border-subtle); border-radius:50%; width:34px; height:34px; font-size:1.1rem; cursor:pointer;">🌟</button>
+                <button class="avatar-emoji-opt" data-emoji="🎧" title="Lofi Study Vibe" style="background:none; border:1px solid var(--border-subtle); border-radius:50%; width:34px; height:34px; font-size:1.1rem; cursor:pointer;">🎧</button>
+                <button class="avatar-emoji-opt" data-emoji="🎯" title="Goal Crusher" style="background:none; border:1px solid var(--border-subtle); border-radius:50%; width:34px; height:34px; font-size:1.1rem; cursor:pointer;">🎯</button>
+            </div>
+            
+            <h2 id="modal-prof-name" style="font-size:1.2rem; font-weight:700; color:var(--text-primary);">Student Name</h2>
+            <p id="modal-prof-role" style="font-size:0.84rem; color:var(--accent-blue); font-weight:600; margin-bottom:4px;">Academic Major</p>
+            <p id="modal-prof-email" style="font-size:0.78rem; color:var(--text-muted); margin-bottom:16px;">student@university.edu</p>
+
+            <div style="background-color:var(--bg-main); padding:12px; border-radius:var(--radius-md); font-size:0.78rem; color:var(--text-secondary); margin-bottom:20px;" id="modal-prof-joined">
+                Member since 2026
+            </div>
+
+            <button class="btn-danger" id="btn-logout" style="width:100%; height:40px;">Logout</button>
+        </div>
+    </div>
+    <!-- 3. Pomodoro Custom Intervals Settings Modal -->
+    <div class="modal-backdrop" id="timer-modal-backdrop">
+        <div class="modal-container" style="max-width: 440px;">
+            <div class="modal-header">
+                <h3>⚙️ Adjust Timer Intervals</h3>
+                <button class="btn-close-modal" id="close-timer-modal">&times;</button>
+            </div>
+            <form id="timer-settings-form" class="todo-input-form">
+                <div style="display:flex; flex-direction:column; gap:14px;">
+                    <div>
+                        <label style="font-size:0.82rem; font-weight:600; color:var(--text-primary);">Focus Session Duration (Minutes)</label>
+                        <input type="number" class="form-input-main" id="custom-focus-min" value="25" min="1" max="180" required style="width:100%; margin-top:4px;">
+                    </div>
+                    <div>
+                        <label style="font-size:0.82rem; font-weight:600; color:var(--text-primary);">Short Break Duration (Minutes)</label>
+                        <input type="number" class="form-input-main" id="custom-short-min" value="5" min="1" max="60" required style="width:100%; margin-top:4px;">
+                    </div>
+                    <div>
+                        <label style="font-size:0.82rem; font-weight:600; color:var(--text-primary);">Long Break Duration (Minutes)</label>
+                        <input type="number" class="form-input-main" id="custom-long-min" value="15" min="1" max="120" required style="width:100%; margin-top:4px;">
+                    </div>
+                    <div style="display:flex; justify-content:flex-end; gap:10px; margin-top:10px;">
+                        <button type="button" class="btn-secondary-sm" id="cancel-timer-modal">Cancel</button>
+                        <button type="submit" class="btn-primary">Save Intervals</button>
+                    </div>
+                </div>
+            </form>
         </div>
     </div>
 

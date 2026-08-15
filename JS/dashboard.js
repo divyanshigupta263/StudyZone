@@ -1,6 +1,6 @@
 /**
  * StudyZone - Dashboard Controller (js/dashboard.js)
- * Day 2 - Task 2: Real-time Stats Engine, Quick Task Completion, and Activity Glance.
+ * Clean real-time stats engine, dynamic greeting, & zero hardcoded dummy data.
  */
 
 document.addEventListener('DOMContentLoaded', () => {
@@ -32,15 +32,23 @@ const Dashboard = {
         const now = new Date();
         const hours = now.getHours();
 
-        let greetingText = 'Good morning, Alex ☀️';
+        let timeGreeting = 'Good morning';
         if (hours >= 12 && hours < 17) {
-            greetingText = 'Good afternoon, Alex 🌤️';
+            timeGreeting = 'Good afternoon';
         } else if (hours >= 17 || hours < 5) {
-            greetingText = 'Good evening, Alex 🌙';
+            timeGreeting = 'Good evening';
         }
 
+        const activeUser = Storage.getActiveUser();
         const greetingEl = document.getElementById('dashboard-greeting');
-        if (greetingEl) greetingEl.textContent = greetingText;
+
+        if (greetingEl) {
+            if (activeUser && activeUser.name) {
+                greetingEl.textContent = `${timeGreeting}, ${activeUser.name} ☀️`;
+            } else {
+                greetingEl.textContent = `${timeGreeting} ☀️`;
+            }
+        }
 
         const options = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' };
         const dateString = now.toLocaleDateString('en-US', options);
@@ -100,6 +108,7 @@ const Dashboard = {
 
     // 3. Dynamic Dashboard Engine
     renderDashboard() {
+        this.renderGreetingAndClock();
         this.updateDashboardStats();
         this.renderTopPriorityTasks();
         this.renderTodaySchedule();
@@ -108,10 +117,10 @@ const Dashboard = {
     // Computes metrics from localStorage
     updateDashboardStats() {
         const tasks = Storage.loadTasks();
-        const assignments = Storage.loadData('assignments', []);
+        const assignments = Storage.loadAssignments();
         const attendance = Storage.loadData('attendance', []);
-        const cgpaData = Storage.loadData('cgpa', { cgpa: '3.88', scale: '4.00', semester: 'Semester 5' });
-        const focusData = Storage.loadData('pomodoro_today', { minutes: 90 });
+        const cgpaData = Storage.loadData('cgpa', { cgpa: '0.00', semester: 'No Semesters' });
+        const focusData = Storage.loadData('pomodoro_today', { minutes: 0 });
 
         // Card 1: Pending Tasks & High Priority Count
         const pendingTasks = tasks.filter(t => t.status !== 'completed');
@@ -122,25 +131,17 @@ const Dashboard = {
         if (pendingCountEl) pendingCountEl.textContent = pendingTasks.length;
         if (pendingSubEl) pendingSubEl.textContent = `${highPriorityCount} high priority`;
 
-        // Card 2: Upcoming Assignments (Within 7 Days)
-        const today = new Date();
-        const nextWeek = new Date();
-        nextWeek.setDate(today.getDate() + 7);
-
-        const dueSoon = assignments.filter(a => {
-            if (a.status === 'Completed') return false;
-            const dueDate = new Date(a.dueDate);
-            return dueDate >= today && dueDate <= nextWeek;
-        });
+        // Card 2: Pending Assignments
+        const pendingAssignments = assignments.filter(a => a.status !== 'Submitted' && a.status !== 'Graded');
 
         const upcomingCountEl = document.getElementById('stat-assignments-count');
         const upcomingSubEl = document.getElementById('stat-assignments-subtitle');
-        if (upcomingCountEl) upcomingCountEl.textContent = dueSoon.length > 0 ? dueSoon.length : assignments.length;
+        if (upcomingCountEl) upcomingCountEl.textContent = pendingAssignments.length;
         if (upcomingSubEl) {
-            if (dueSoon.length > 0) {
-                upcomingSubEl.textContent = `Next: ${dueSoon[0].title.slice(0, 18)}...`;
+            if (pendingAssignments.length > 0) {
+                upcomingSubEl.textContent = `Next: ${pendingAssignments[0].title.slice(0, 18)}`;
             } else {
-                upcomingSubEl.textContent = 'No urgent deadlines';
+                upcomingSubEl.textContent = 'No pending deadlines';
             }
         }
 
@@ -152,13 +153,16 @@ const Dashboard = {
             totalClasses += (item.total || 0);
         });
 
-        const overallPct = totalClasses > 0 ? Math.round((totalAttended / totalClasses) * 100) : 91;
+        const overallPct = totalClasses > 0 ? Math.round((totalAttended / totalClasses) * 100) : 0;
         const attendanceValueEl = document.getElementById('stat-attendance-pct');
         const attendanceBadgeEl = document.getElementById('stat-attendance-badge');
 
-        if (attendanceValueEl) attendanceValueEl.textContent = `${overallPct}%`;
+        if (attendanceValueEl) attendanceValueEl.textContent = totalClasses > 0 ? `${overallPct}%` : '0%';
         if (attendanceBadgeEl) {
-            if (overallPct >= 75) {
+            if (totalClasses === 0) {
+                attendanceBadgeEl.textContent = 'No Data';
+                attendanceBadgeEl.className = 'badge-status neutral';
+            } else if (overallPct >= 75) {
                 attendanceBadgeEl.textContent = 'Safe';
                 attendanceBadgeEl.className = 'badge-status safe';
             } else if (overallPct >= 65) {
@@ -173,18 +177,26 @@ const Dashboard = {
         // Card 4: CGPA Snapshot
         const cgpaValEl = document.getElementById('stat-cgpa-val');
         const cgpaSubEl = document.getElementById('stat-cgpa-subtitle');
-        if (cgpaValEl) cgpaValEl.textContent = cgpaData.cgpa || '3.88';
-        if (cgpaSubEl) cgpaSubEl.textContent = cgpaData.semester || 'Semester 5';
+        if (cgpaValEl) cgpaValEl.textContent = cgpaData.cgpa || '0.00';
+        if (cgpaSubEl) cgpaSubEl.textContent = cgpaData.semester || 'Academic Status';
 
         // Card 5: Today's Study Focus Time
         const focusValEl = document.getElementById('stat-focus-time');
         if (focusValEl) {
-            const mins = focusData.minutes || 90;
-            if (mins >= 60) {
-                const hrs = (mins / 60).toFixed(1);
-                focusValEl.textContent = `${hrs}h`;
+            const totalSecs = focusData.totalSeconds || ((focusData.totalMinutes || focusData.minutes || 0) * 60);
+            if (!totalSecs || totalSecs <= 0) {
+                focusValEl.textContent = '0m';
+            } else if (totalSecs < 60) {
+                focusValEl.textContent = `${totalSecs}s`;
             } else {
-                focusValEl.textContent = `${mins}m`;
+                const mins = Math.floor(totalSecs / 60);
+                if (mins < 60) {
+                    focusValEl.textContent = `${mins}m`;
+                } else {
+                    const hrs = Math.floor(mins / 60);
+                    const remMins = mins % 60;
+                    focusValEl.textContent = remMins > 0 ? `${hrs}h ${remMins}m` : `${hrs}h`;
+                }
             }
         }
     },
@@ -202,8 +214,8 @@ const Dashboard = {
         if (uncompleted.length === 0) {
             container.innerHTML = `
                 <div class="empty-state">
-                    <span class="empty-state-icon">🎉</span>
-                    <p class="empty-state-text">No urgent tasks — all caught up!</p>
+                    <span class="empty-state-icon">📋</span>
+                    <p class="empty-state-text">No active tasks — click + New Task above to create one!</p>
                 </div>
             `;
             return;
@@ -224,10 +236,12 @@ const Dashboard = {
         `).join('');
     },
 
-    // Quick completion action directly from the Dashboard
     toggleTaskComplete(taskId) {
         Storage.updateTask(taskId, { status: 'completed' });
         this.renderDashboard();
+        if (window.TodoManager && typeof window.TodoManager.renderTasks === 'function') {
+            window.TodoManager.renderTasks();
+        }
     },
 
     // Renders today's schedule preview
@@ -235,20 +249,29 @@ const Dashboard = {
         const container = document.getElementById('today-schedule-list');
         if (!container) return;
 
-        const schedule = [
-            { time: '09:00 - 10:30', course: 'CS301 — Operating Systems', room: 'Hall B • Prof. Harrison', status: 'Completed', statusClass: 'completed' },
-            { time: '11:00 - 12:30', course: 'MATH204 — Linear Algebra', room: 'Room 302 • Dr. Zhao', status: 'Upcoming', statusClass: 'upcoming' },
-            { time: '14:00 - 16:00', course: 'CS405 — Web Engineering Lab', room: 'Lab 4 • Tech Hub', status: 'Later Today', statusClass: 'later' }
-        ];
+        const schedule = Storage.loadData('timetable', []);
+        const dayMap = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
+        const todayName = dayMap[new Date().getDay()];
 
-        container.innerHTML = schedule.map(item => `
-            <div class="schedule-item searchable-item">
-                <span class="schedule-time">${item.time}</span>
-                <div class="schedule-info">
-                    <div class="schedule-course">${item.course}</div>
-                    <div class="schedule-location">${item.room}</div>
+        const todayClasses = schedule.filter(c => c.day === todayName);
+
+        if (todayClasses.length === 0) {
+            container.innerHTML = `
+                <div class="empty-state">
+                    <span class="empty-state-icon">📅</span>
+                    <p class="empty-state-text">No classes scheduled for today.</p>
                 </div>
-                <span class="schedule-status ${item.statusClass}">${item.status}</span>
+            `;
+            return;
+        }
+
+        container.innerHTML = todayClasses.map(item => `
+            <div class="schedule-item searchable-item">
+                <span class="schedule-time">${item.startTime} - ${item.endTime}</span>
+                <div class="schedule-info">
+                    <div class="schedule-course">${item.subject}</div>
+                    <div class="schedule-location">${item.room || 'Classroom'} • ${item.professor || 'Prof.'}</div>
+                </div>
             </div>
         `).join('');
     }

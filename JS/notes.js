@@ -30,7 +30,9 @@ const NotesManager = {
         const modalBackdrop = document.getElementById('note-modal-backdrop');
         if (closeBtn) closeBtn.addEventListener('click', () => this.closeModal());
         if (cancelBtn) cancelBtn.addEventListener('click', () => this.closeModal());
-        if (modalBackdrop) modalBackdrop.addEventListener('click', () => this.closeModal());
+        if (modalBackdrop) modalBackdrop.addEventListener('click', (e) => {
+            if (e.target === modalBackdrop) this.closeModal();
+        });
 
         // Note Form Submit
         const noteForm = document.getElementById('note-editor-form');
@@ -127,8 +129,10 @@ const NotesManager = {
         if (modal) modal.classList.remove('active');
     },
 
-    // 3. Save / Update Note
+    // 3. Save Note (Create / Edit)
     handleSaveNote() {
+        if (!Storage.requireAuth()) return;
+
         const title = document.getElementById('note-title-input').value.trim();
         const course = document.getElementById('note-course-input').value;
         const content = document.getElementById('note-body-input').value.trim();
@@ -200,6 +204,29 @@ ${note.content || ''}
         URL.revokeObjectURL(link.href);
     },
 
+    renderCategoryPills(allNotes) {
+        const container = document.getElementById('notes-filter-pills-container');
+        if (!container) return;
+
+        const categories = Array.from(new Set(allNotes.map(n => n.course).filter(c => c && c.trim()))).sort();
+
+        container.innerHTML = `
+            <button class="note-cat-pill ${this.currentCategory === 'all' ? 'active' : ''}" data-cat="all">All Notes</button>
+            ${categories.map(cat => `
+                <button class="note-cat-pill ${this.currentCategory.toLowerCase() === cat.toLowerCase() ? 'active' : ''}" data-cat="${this.escapeHtml(cat)}">${this.escapeHtml(cat)}</button>
+            `).join('')}
+        `;
+
+        container.querySelectorAll('.note-cat-pill').forEach(btn => {
+            btn.addEventListener('click', () => {
+                container.querySelectorAll('.note-cat-pill').forEach(b => b.classList.remove('active'));
+                btn.classList.add('active');
+                this.currentCategory = btn.getAttribute('data-cat') || 'all';
+                this.renderNotes();
+            });
+        });
+    },
+
     // 7. Render Notes Grid (Pinned & Other)
     renderNotes() {
         const pinnedContainer = document.getElementById('pinned-notes-grid');
@@ -208,7 +235,10 @@ ${note.content || ''}
 
         if (!pinnedContainer || !otherContainer) return;
 
-        let notes = Storage.loadNotes();
+        const allNotes = Storage.loadNotes();
+        this.renderCategoryPills(allNotes);
+
+        let notes = [...allNotes];
 
         // Apply Category Filter
         if (this.currentCategory !== 'all') {
@@ -243,7 +273,7 @@ ${note.content || ''}
             otherContainer.innerHTML = `
                 <div class="empty-state" style="grid-column: 1 / -1;">
                     <span class="empty-state-icon">📝</span>
-                    <p class="empty-state-text">No notes found. Create your first study note!</p>
+                    <p class="empty-state-text">No notes yet. Create your first note.</p>
                 </div>
             `;
         } else {

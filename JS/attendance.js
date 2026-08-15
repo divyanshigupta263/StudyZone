@@ -1,6 +1,6 @@
 /**
- * StudyZone - Attendance Tracker & Advice Calculator (js/attendance.js)
- * Day 5 - Task 1: Subject attendance tracking, "+ Present" / "+ Absent" logging, Smart Bunk Advice, & Scratchpad.
+ * StudyZone - Attendance & Daily Study Hours Goal Tracker (js/attendance.js)
+ * Completely separated Class Lecture Attendance (number of classes) and Daily Study Hours Tracker (hours & minutes).
  */
 
 document.addEventListener('DOMContentLoaded', () => {
@@ -9,64 +9,116 @@ document.addEventListener('DOMContentLoaded', () => {
 
 const AttendanceManager = {
     editingId: null,
-    historyStack: {}, // Stores previous state per subject for Undo action
+    editingStudyId: null,
+    historyStack: {},
+    activeTab: 'lectures',
 
     init() {
-        this.seedDefaultSubjects();
         this.bindEvents();
         this.renderAttendance();
-    },
-
-    seedDefaultSubjects() {
-        const existing = Storage.loadData('attendance', null);
-        if (!existing || existing.length === 0) {
-            const defaults = [
-                { id: 'att_1', code: 'CS301', name: 'Operating Systems', attended: 22, total: 24, target: 75 },
-                { id: 'att_2', code: 'MATH204', name: 'Linear Algebra', attended: 16, total: 20, target: 75 },
-                { id: 'att_3', code: 'CS302', name: 'Databases', attended: 12, total: 16, target: 75 },
-                { id: 'att_4', code: 'CS405', name: 'Web Engineering', attended: 11, total: 16, target: 75 }
-            ];
-            Storage.saveData('attendance', defaults);
-        }
+        this.renderStudyTracker();
     },
 
     bindEvents() {
-        // Add Subject Button
+        // Dynamic "+ Add" button in header
         const addBtn = document.getElementById('btn-add-subject');
-        if (addBtn) addBtn.addEventListener('click', () => this.openCreateModal());
+        if (addBtn) addBtn.addEventListener('click', () => this.handleTopAddButtonClick());
 
-        // Modal Close triggers
-        const closeBtn = document.getElementById('close-att-modal');
-        const cancelBtn = document.getElementById('cancel-att-modal');
-        const backdrop = document.getElementById('att-modal-backdrop');
-        if (closeBtn) closeBtn.addEventListener('click', () => this.closeModal());
-        if (cancelBtn) cancelBtn.addEventListener('click', () => this.closeModal());
-        if (backdrop) backdrop.addEventListener('click', () => this.closeModal());
+        // Class Attendance Modal Listeners
+        const closeAttBtn = document.getElementById('close-att-modal');
+        const cancelAttBtn = document.getElementById('cancel-att-modal');
+        const backdropAtt = document.getElementById('att-modal-backdrop');
+        if (closeAttBtn) closeAttBtn.addEventListener('click', () => this.closeAttModal());
+        if (cancelAttBtn) cancelAttBtn.addEventListener('click', () => this.closeAttModal());
+        if (backdropAtt) backdropAtt.addEventListener('click', (e) => {
+            if (e.target === backdropAtt) this.closeAttModal();
+        });
 
-        // Modal Form Submit
-        const form = document.getElementById('att-editor-form');
-        if (form) {
-            form.addEventListener('submit', (e) => {
+        const attForm = document.getElementById('att-editor-form');
+        if (attForm) {
+            attForm.addEventListener('submit', (e) => {
                 e.preventDefault();
-                this.handleSaveSubject();
+                this.handleSaveClassSubject();
             });
         }
 
-        // Quick Scratchpad Calculator Inputs
-        const scratchAttended = document.getElementById('scratch-attended');
-        const scratchTotal = document.getElementById('scratch-total');
-        const scratchTarget = document.getElementById('scratch-target');
-
-        [scratchAttended, scratchTotal, scratchTarget].forEach(input => {
-            if (input) input.addEventListener('input', () => this.calculateScratchpad());
+        // Study Goal Modal Listeners
+        const closeStudyBtn = document.getElementById('close-study-modal');
+        const cancelStudyBtn = document.getElementById('cancel-study-modal');
+        const backdropStudy = document.getElementById('study-modal-backdrop');
+        if (closeStudyBtn) closeStudyBtn.addEventListener('click', () => this.closeStudyModal());
+        if (cancelStudyBtn) cancelStudyBtn.addEventListener('click', () => this.closeStudyModal());
+        if (backdropStudy) backdropStudy.addEventListener('click', (e) => {
+            if (e.target === backdropStudy) this.closeStudyModal();
         });
+
+        const studyForm = document.getElementById('study-editor-form');
+        if (studyForm) {
+            studyForm.addEventListener('submit', (e) => {
+                e.preventDefault();
+                this.handleSaveStudyGoal();
+            });
+        }
+
+        // Log Time Modal Listeners
+        const closeLogBtn = document.getElementById('close-log-modal');
+        const cancelLogBtn = document.getElementById('cancel-log-modal');
+        const backdropLog = document.getElementById('log-time-modal-backdrop');
+        if (closeLogBtn) closeLogBtn.addEventListener('click', () => this.closeLogModal());
+        if (cancelLogBtn) cancelLogBtn.addEventListener('click', () => this.closeLogModal());
+        if (backdropLog) backdropLog.addEventListener('click', (e) => {
+            if (e.target === backdropLog) this.closeLogModal();
+        });
+
+        const logForm = document.getElementById('log-time-form');
+        if (logForm) {
+            logForm.addEventListener('submit', (e) => {
+                e.preventDefault();
+                this.handleSaveLogTime();
+            });
+        }
     },
 
-    // 1. Modal Dialog Logic
-    openCreateModal() {
+    handleTopAddButtonClick() {
+        if (this.activeTab === 'lectures') {
+            this.openCreateAttModal();
+        } else {
+            this.openCreateStudyModal();
+        }
+    },
+
+    switchTab(tab) {
+        this.activeTab = tab;
+        const lecturesBtn = document.getElementById('att-tab-lectures');
+        const studyBtn = document.getElementById('att-tab-study');
+        const lecturesPanel = document.getElementById('att-panel-lectures');
+        const studyPanel = document.getElementById('att-panel-study');
+        const btnText = document.getElementById('btn-add-subject-text');
+
+        if (tab === 'lectures') {
+            if (lecturesBtn) lecturesBtn.classList.add('active');
+            if (studyBtn) studyBtn.classList.remove('active');
+            if (lecturesPanel) lecturesPanel.style.display = 'block';
+            if (studyPanel) studyPanel.style.display = 'none';
+            if (btnText) btnText.textContent = 'Add Class Subject';
+            this.renderAttendance();
+        } else {
+            if (lecturesBtn) lecturesBtn.classList.remove('active');
+            if (studyBtn) studyBtn.classList.add('active');
+            if (lecturesPanel) lecturesPanel.style.display = 'none';
+            if (studyPanel) studyPanel.style.display = 'block';
+            if (btnText) btnText.textContent = 'Add Study Goal';
+            this.renderStudyTracker();
+        }
+    },
+
+    // ==========================================
+    // 1. CLASS LECTURES ATTENDANCE (Number of classes)
+    // ==========================================
+    openCreateAttModal() {
+        if (!Storage.requireAuth()) return;
         this.editingId = null;
-        document.getElementById('att-modal-title').textContent = 'Add New Subject';
-        document.getElementById('att-code-input').value = '';
+        document.getElementById('att-modal-title').textContent = 'Add Class Subject';
         document.getElementById('att-name-input').value = '';
         document.getElementById('att-attended-input').value = '0';
         document.getElementById('att-total-input').value = '0';
@@ -76,14 +128,14 @@ const AttendanceManager = {
         if (modal) modal.classList.add('active');
     },
 
-    openEditModal(id) {
+    openEditAttModal(id) {
+        if (!Storage.requireAuth()) return;
         const subjects = Storage.loadData('attendance', []);
         const item = subjects.find(s => s.id === id);
         if (!item) return;
 
         this.editingId = id;
-        document.getElementById('att-modal-title').textContent = 'Edit Subject Attendance';
-        document.getElementById('att-code-input').value = item.code || '';
+        document.getElementById('att-modal-title').textContent = 'Edit Class Subject';
         document.getElementById('att-name-input').value = item.name || '';
         document.getElementById('att-attended-input').value = item.attended || 0;
         document.getElementById('att-total-input').value = item.total || 0;
@@ -93,21 +145,22 @@ const AttendanceManager = {
         if (modal) modal.classList.add('active');
     },
 
-    closeModal() {
+    closeAttModal() {
         this.editingId = null;
         const modal = document.getElementById('att-modal-backdrop');
         if (modal) modal.classList.remove('active');
     },
 
-    handleSaveSubject() {
-        const code = document.getElementById('att-code-input').value.trim().toUpperCase();
+    handleSaveClassSubject() {
+        if (!Storage.requireAuth()) return;
+
         const name = document.getElementById('att-name-input').value.trim();
         const attended = parseInt(document.getElementById('att-attended-input').value, 10) || 0;
         const total = parseInt(document.getElementById('att-total-input').value, 10) || 0;
         const target = parseInt(document.getElementById('att-target-input').value, 10) || 75;
 
-        if (!code || !name) {
-            alert('Please fill in Subject Code and Name!');
+        if (!name) {
+            alert('Please fill in Subject Name!');
             return;
         }
 
@@ -121,12 +174,11 @@ const AttendanceManager = {
         if (this.editingId) {
             const index = subjects.findIndex(s => s.id === this.editingId);
             if (index >= 0) {
-                subjects[index] = { ...subjects[index], code, name, attended, total, target };
+                subjects[index] = { ...subjects[index], name, attended, total, target };
             }
         } else {
             subjects.push({
                 id: 'att_' + Date.now(),
-                code,
                 name,
                 attended,
                 total,
@@ -135,13 +187,15 @@ const AttendanceManager = {
         }
 
         Storage.saveData('attendance', subjects);
-        this.closeModal();
+        this.closeAttModal();
         this.renderAttendance();
         this.syncDashboard();
     },
 
-    deleteSubject(id) {
-        if (confirm('Are you sure you want to delete this subject?')) {
+    deleteClassSubject(id) {
+        if (!Storage.requireAuth()) return;
+
+        if (confirm('Are you sure you want to delete this class subject?')) {
             const subjects = Storage.loadData('attendance', []);
             const updated = subjects.filter(s => s.id !== id);
             Storage.saveData('attendance', updated);
@@ -150,15 +204,13 @@ const AttendanceManager = {
         }
     },
 
-    // 2. Attendance Actions (+ Present, + Absent, Undo)
     markPresent(id) {
+        if (!Storage.requireAuth()) return;
         const subjects = Storage.loadData('attendance', []);
         const item = subjects.find(s => s.id === id);
         if (!item) return;
 
-        // Save history for Undo
         this.historyStack[id] = { attended: item.attended, total: item.total };
-
         item.attended += 1;
         item.total += 1;
 
@@ -168,13 +220,12 @@ const AttendanceManager = {
     },
 
     markAbsent(id) {
+        if (!Storage.requireAuth()) return;
         const subjects = Storage.loadData('attendance', []);
         const item = subjects.find(s => s.id === id);
         if (!item) return;
 
-        // Save history for Undo
         this.historyStack[id] = { attended: item.attended, total: item.total };
-
         item.total += 1;
 
         Storage.saveData('attendance', subjects);
@@ -192,7 +243,6 @@ const AttendanceManager = {
 
         item.attended = prev.attended;
         item.total = prev.total;
-
         delete this.historyStack[id];
 
         Storage.saveData('attendance', subjects);
@@ -200,7 +250,6 @@ const AttendanceManager = {
         this.syncDashboard();
     },
 
-    // 3. Smart Attendance & Bunk Advice Engine
     calculateAdvice(attended, total, targetPct = 75) {
         if (total === 0) return { pct: 100, text: 'No classes held yet', status: 'safe' };
 
@@ -212,7 +261,6 @@ const AttendanceManager = {
         else if (pct < targetPct) status = 'warning';
 
         if (pct < targetPct) {
-            // Need to attend 'x' consecutive classes: (attended + x) / (total + x) >= targetDecimal
             const x = Math.ceil((targetDecimal * total - attended) / (1 - targetDecimal));
             return {
                 pct,
@@ -220,7 +268,6 @@ const AttendanceManager = {
                 text: `Attend next <strong>${x}</strong> consecutive class${x > 1 ? 'es' : ''} to reach ${targetPct}%`
             };
         } else {
-            // Can safely miss 'y' classes: attended / (total + y) >= targetDecimal
             const y = Math.floor((attended - targetDecimal * total) / targetDecimal);
             if (y > 0) {
                 return {
@@ -238,47 +285,12 @@ const AttendanceManager = {
         }
     },
 
-    // 4. Scratchpad Mini Calculator Logic
-    calculateScratchpad() {
-        const attended = parseInt(document.getElementById('scratch-attended').value, 10) || 0;
-        const total = parseInt(document.getElementById('scratch-total').value, 10) || 0;
-        const target = parseInt(document.getElementById('scratch-target').value, 10) || 75;
-
-        const resultEl = document.getElementById('scratch-result-box');
-        if (!resultEl) return;
-
-        if (total === 0) {
-            resultEl.innerHTML = `<span style="color:var(--text-muted);">Enter class counts to calculate what-if scenarios.</span>`;
-            return;
-        }
-
-        const advice = this.calculateAdvice(attended, total, target);
-        resultEl.innerHTML = `
-            <div class="scratch-result-header">
-                <span class="scratch-result-pct" style="color: var(--accent-${advice.status === 'safe' ? 'emerald' : advice.status === 'warning' ? 'amber' : 'rose'});">
-                    ${advice.pct.toFixed(1)}%
-                </span>
-                <span class="badge-status ${advice.status}">${advice.status.toUpperCase()}</span>
-            </div>
-            <div class="scratch-result-advice">${advice.text}</div>
-        `;
-    },
-
-    // 5. Sync with Dashboard Overview
-    syncDashboard() {
-        if (window.Dashboard && typeof window.Dashboard.renderDashboard === 'function') {
-            window.Dashboard.renderDashboard();
-        }
-    },
-
-    // 6. Main Render Engine
     renderAttendance() {
         const container = document.getElementById('attendance-cards-grid');
         if (!container) return;
 
         const subjects = Storage.loadData('attendance', []);
 
-        // Calculate Aggregate Total
         let grandAttended = 0;
         let grandTotal = 0;
 
@@ -287,39 +299,41 @@ const AttendanceManager = {
             grandTotal += (s.total || 0);
         });
 
-        const overallPct = grandTotal > 0 ? ((grandAttended / grandTotal) * 100) : 100;
+        const overallPct = grandTotal > 0 ? ((grandAttended / grandTotal) * 100) : 0;
         
-        let overallStatus = 'safe';
-        let overallText = 'You are on track!';
-        if (overallPct < 65) {
-            overallStatus = 'critical';
-            overallText = 'Shortage risk! High priority.';
-        } else if (overallPct < 75) {
-            overallStatus = 'warning';
-            overallText = 'Attendance dipping — attend next classes!';
+        let overallStatus = 'neutral';
+        let overallText = 'No class subjects added yet. Track attendance below.';
+        if (grandTotal > 0) {
+            if (overallPct < 65) {
+                overallStatus = 'critical';
+                overallText = 'Shortage risk! High priority.';
+            } else if (overallPct < 75) {
+                overallStatus = 'warning';
+                overallText = 'Attendance dipping — attend next classes!';
+            } else {
+                overallStatus = 'safe';
+                overallText = 'You are on track!';
+            }
         }
 
-        // Render Top Health Overview Card
-        document.getElementById('att-overall-pct').textContent = overallPct.toFixed(1) + '%';
+        document.getElementById('att-overall-pct').textContent = grandTotal > 0 ? overallPct.toFixed(1) + '%' : '0%';
         const badgeEl = document.getElementById('att-overall-badge');
         if (badgeEl) {
             badgeEl.className = `badge-status ${overallStatus}`;
-            badgeEl.textContent = overallStatus.toUpperCase();
+            badgeEl.textContent = grandTotal > 0 ? overallStatus.toUpperCase() : 'NO DATA';
         }
         document.getElementById('att-overall-text').textContent = overallText;
         
         const progressBar = document.getElementById('att-overall-progress');
         if (progressBar) {
             progressBar.style.width = `${Math.min(overallPct, 100)}%`;
-            progressBar.style.backgroundColor = `var(--accent-${overallStatus === 'safe' ? 'emerald' : overallStatus === 'warning' ? 'amber' : 'rose'})`;
         }
 
-        // Render Subject Cards
         if (subjects.length === 0) {
             container.innerHTML = `
                 <div class="empty-state" style="grid-column:1/-1;">
                     <span class="empty-state-icon">📊</span>
-                    <p class="empty-state-text">No subjects added yet. Click "+ Add Subject" to start tracking!</p>
+                    <p class="empty-state-text">No class subjects added yet. Click "Add Class Subject" to track lecture attendance.</p>
                 </div>
             `;
             return;
@@ -333,7 +347,6 @@ const AttendanceManager = {
                 <div class="attendance-card searchable-item" data-id="${s.id}">
                     <div class="att-card-header">
                         <div>
-                            <span class="badge badge-course">${s.code}</span>
                             <h3 class="att-card-title">${this.escapeHtml(s.name)}</h3>
                         </div>
                         <div class="att-card-score">
@@ -365,10 +378,10 @@ const AttendanceManager = {
                         </div>
 
                         <div class="att-edit-actions">
-                            <button class="btn-action-icon" onclick="AttendanceManager.openEditModal('${s.id}')" title="Edit">
+                            <button class="btn-action-icon" onclick="AttendanceManager.openEditAttModal('${s.id}')" title="Edit">
                                 <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 2 2h14a2 2 0 0 2 2v-7"></path><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path></svg>
                             </button>
-                            <button class="btn-action-icon delete" onclick="AttendanceManager.deleteSubject('${s.id}')" title="Delete">
+                            <button class="btn-action-icon delete" onclick="AttendanceManager.deleteClassSubject('${s.id}')" title="Delete">
                                 <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg>
                             </button>
                         </div>
@@ -376,6 +389,306 @@ const AttendanceManager = {
                 </div>
             `;
         }).join('');
+    },
+
+
+    // ==========================================
+    // 2. DAILY STUDY HOURS TRACKER (Hours & Minutes)
+    // ==========================================
+    openCreateStudyModal() {
+        if (!Storage.requireAuth()) return;
+        this.editingStudyId = null;
+        document.getElementById('study-modal-title').textContent = 'Add Study Goal';
+        document.getElementById('study-name-input').value = '';
+        document.getElementById('study-target-input').value = '2.0';
+        document.getElementById('study-logged-input').value = '0';
+
+        const modal = document.getElementById('study-modal-backdrop');
+        if (modal) modal.classList.add('active');
+    },
+
+    openEditStudyModal(id) {
+        if (!Storage.requireAuth()) return;
+        const goals = Storage.loadData('study_goals', []);
+        const item = goals.find(g => g.id === id);
+        if (!item) return;
+
+        this.editingStudyId = id;
+        document.getElementById('study-modal-title').textContent = 'Edit Study Goal';
+        document.getElementById('study-name-input').value = item.name || '';
+        document.getElementById('study-target-input').value = item.targetHours || 2.0;
+        document.getElementById('study-logged-input').value = item.loggedHoursToday || 0;
+
+        const modal = document.getElementById('study-modal-backdrop');
+        if (modal) modal.classList.add('active');
+    },
+
+    closeStudyModal() {
+        this.editingStudyId = null;
+        const modal = document.getElementById('study-modal-backdrop');
+        if (modal) modal.classList.remove('active');
+    },
+
+    handleSaveStudyGoal() {
+        if (!Storage.requireAuth()) return;
+
+        const name = document.getElementById('study-name-input').value.trim();
+        const targetHours = parseFloat(document.getElementById('study-target-input').value) || 2.0;
+        const loggedHoursToday = parseFloat(document.getElementById('study-logged-input').value) || 0;
+
+        if (!name) {
+            alert('Please fill in Subject Name!');
+            return;
+        }
+
+        const goals = Storage.loadData('study_goals', []);
+        const todayStr = new Date().toISOString().split('T')[0];
+
+        if (this.editingStudyId) {
+            const index = goals.findIndex(g => g.id === this.editingStudyId);
+            if (index >= 0) {
+                goals[index] = { 
+                    ...goals[index], 
+                    name, 
+                    targetHours: parseFloat(targetHours.toFixed(2)), 
+                    loggedHoursToday: parseFloat(loggedHoursToday.toFixed(2)),
+                    lastUpdatedDate: todayStr
+                };
+            }
+        } else {
+            goals.push({
+                id: 'sg_' + Date.now(),
+                name,
+                targetHours: parseFloat(targetHours.toFixed(2)),
+                loggedHoursToday: parseFloat(loggedHoursToday.toFixed(2)),
+                lastUpdatedDate: todayStr
+            });
+        }
+
+        Storage.saveData('study_goals', goals);
+        this.closeStudyModal();
+        this.renderStudyTracker();
+    },
+
+    deleteStudyGoal(id) {
+        if (!Storage.requireAuth()) return;
+
+        if (confirm('Are you sure you want to delete this study goal?')) {
+            const goals = Storage.loadData('study_goals', []);
+            const updated = goals.filter(g => g.id !== id);
+            Storage.saveData('study_goals', updated);
+            this.renderStudyTracker();
+        }
+    },
+
+    openLogTimeModal(id) {
+        if (!Storage.requireAuth()) return;
+        const goals = Storage.loadData('study_goals', []);
+        const item = goals.find(g => g.id === id);
+        if (!item) return;
+
+        // Pre-fill modal starting from logged time or target goal set during creation
+        const valToDisplay = (item.loggedHoursToday && item.loggedHoursToday > 0) 
+            ? item.loggedHoursToday 
+            : (item.targetHours || 0);
+
+        const hrs = Math.floor(valToDisplay);
+        const mins = Math.round((valToDisplay - hrs) * 60);
+
+        document.getElementById('log-study-id').value = id;
+        document.getElementById('log-study-subject-name').textContent = item.name;
+        document.getElementById('log-hours-input').value = hrs;
+        document.getElementById('log-mins-input').value = mins;
+
+        const modal = document.getElementById('log-time-modal-backdrop');
+        if (modal) modal.classList.add('active');
+    },
+
+    closeLogModal() {
+        const modal = document.getElementById('log-time-modal-backdrop');
+        if (modal) modal.classList.remove('active');
+    },
+
+    handleSaveLogTime() {
+        if (!Storage.requireAuth()) return;
+
+        const id = document.getElementById('log-study-id').value;
+        const hrs = parseInt(document.getElementById('log-hours-input').value, 10) || 0;
+        const mins = parseInt(document.getElementById('log-mins-input').value, 10) || 0;
+
+        const newTotalHours = hrs + (mins / 60);
+
+        if (newTotalHours < 0) {
+            alert('Please enter a valid study duration!');
+            return;
+        }
+
+        const goals = Storage.loadData('study_goals', []);
+        const item = goals.find(g => g.id === id);
+        if (item) {
+            const todayStr = new Date().toISOString().split('T')[0];
+            item.loggedHoursToday = parseFloat(newTotalHours.toFixed(2));
+            item.lastUpdatedDate = todayStr;
+            Storage.saveData('study_goals', goals);
+        }
+
+        this.closeLogModal();
+        this.renderStudyTracker();
+    },
+
+    quickLogTime(id, addHours) {
+        if (!Storage.requireAuth()) return;
+        const goals = Storage.loadData('study_goals', []);
+        const item = goals.find(g => g.id === id);
+        if (!item) return;
+
+        const todayStr = new Date().toISOString().split('T')[0];
+        if (item.lastUpdatedDate !== todayStr) {
+            item.loggedHoursToday = 0;
+            item.lastUpdatedDate = todayStr;
+        }
+
+        item.loggedHoursToday = parseFloat((item.loggedHoursToday + addHours).toFixed(2));
+        Storage.saveData('study_goals', goals);
+        this.renderStudyTracker();
+    },
+
+    resetTodayStudy(id) {
+        if (!Storage.requireAuth()) return;
+        const goals = Storage.loadData('study_goals', []);
+        const item = goals.find(g => g.id === id);
+        if (!item) return;
+
+        item.loggedHoursToday = 0;
+        Storage.saveData('study_goals', goals);
+        this.renderStudyTracker();
+    },
+
+    renderStudyTracker() {
+        const container = document.getElementById('study-cards-grid');
+        if (!container) return;
+
+        const goals = Storage.loadData('study_goals', []);
+        const todayStr = new Date().toISOString().split('T')[0];
+
+        let grandLogged = 0;
+        let grandGoal = 0;
+        let effectiveLoggedSum = 0;
+
+        goals.forEach(g => {
+            // Auto reset if new day
+            if (g.lastUpdatedDate !== todayStr) {
+                g.loggedHoursToday = 0;
+                g.lastUpdatedDate = todayStr;
+            }
+            const logged = g.loggedHoursToday || 0;
+            const target = g.targetHours || 1.0;
+
+            grandLogged += logged;
+            grandGoal += target;
+            effectiveLoggedSum += Math.min(logged, target);
+        });
+
+        Storage.saveData('study_goals', goals);
+
+        // Require EVERY single study goal task to reach its target hours
+        const allGoalsCompleted = goals.length > 0 && goals.every(g => (g.loggedHoursToday || 0) >= (g.targetHours || 0));
+        const overallPct = grandGoal > 0 ? Math.min((effectiveLoggedSum / grandGoal) * 100, 100) : 0;
+        
+        document.getElementById('study-overall-pct').textContent = grandLogged.toFixed(1) + 'h';
+        document.getElementById('study-overall-text').textContent = grandGoal > 0 
+            ? `Daily Goal: ${grandLogged.toFixed(1)} / ${grandGoal.toFixed(1)} hours logged today`
+            : 'Click "Add Study Goal" to set daily target study hours for your subjects';
+
+        const overallBadge = document.getElementById('study-overall-badge');
+        if (overallBadge) {
+            if (allGoalsCompleted) {
+                overallBadge.className = 'badge-status safe';
+                overallBadge.textContent = 'GOAL ACHIEVED 🎉';
+            } else {
+                overallBadge.className = 'badge-status warning';
+                overallBadge.textContent = 'IN PROGRESS';
+            }
+        }
+
+        const progressBar = document.getElementById('study-overall-progress');
+        if (progressBar) {
+            progressBar.style.width = `${overallPct}%`;
+        }
+
+        if (goals.length === 0) {
+            container.innerHTML = `
+                <div class="empty-state" style="grid-column:1/-1;">
+                    <span class="empty-state-icon">⏱️</span>
+                    <p class="empty-state-text">No study goals added yet. Click "Add Study Goal" to track daily study hours.</p>
+                </div>
+            `;
+            return;
+        }
+
+        container.innerHTML = goals.map(g => {
+            const logged = g.loggedHoursToday || 0;
+            const targetGoal = g.targetHours || 1.0;
+            const pct = Math.min((logged / targetGoal) * 100, 100);
+            const isCompleted = logged >= targetGoal;
+            const remaining = Math.max(targetGoal - logged, 0);
+
+            return `
+                <div class="attendance-card searchable-item" data-id="${g.id}">
+                    <div class="att-card-header">
+                        <div>
+                            <h3 class="att-card-title">${this.escapeHtml(g.name)}</h3>
+                        </div>
+                        <div class="att-card-score">
+                            <span class="att-card-pct" style="color: ${isCompleted ? 'var(--accent-emerald)' : 'var(--accent-purple)'};">
+                                ${logged.toFixed(1)}h
+                            </span>
+                            <span class="badge-status ${isCompleted ? 'safe' : 'warning'}">
+                                ${isCompleted ? 'GOAL MET 🎉' : 'IN PROGRESS'}
+                            </span>
+                        </div>
+                    </div>
+
+                    <div class="att-card-counts">
+                        <span>Logged Today: <strong>${logged.toFixed(1)}h</strong></span>
+                        <span class="att-target-label">Target Goal: <strong>${targetGoal.toFixed(1)}h</strong></span>
+                    </div>
+
+                    <div class="att-progress-bar-bg">
+                        <div class="att-progress-bar-fill" style="width:${pct}%; background-color: ${isCompleted ? 'var(--accent-emerald)' : 'var(--accent-purple)'};"></div>
+                    </div>
+
+                    <div class="att-advice-box ${isCompleted ? 'safe' : 'warning'}">
+                        ${isCompleted 
+                            ? `🎉 Great job! You hit your <strong>${targetGoal} hour</strong> daily study goal for ${this.escapeHtml(g.name)}!` 
+                            : `⏱️ <strong>${remaining.toFixed(1)} hours</strong> remaining to hit your ${targetGoal}h daily target.`}
+                    </div>
+
+                    <div class="att-card-footer">
+                        <div class="att-action-btns">
+                            <button class="btn-att-present" style="background:rgba(139,92,246,0.15); color:var(--accent-purple); border-color:rgba(139,92,246,0.3);" onclick="AttendanceManager.openLogTimeModal('${g.id}')">+ Log Time</button>
+                            <button class="btn-att-present" style="background:rgba(139,92,246,0.25); color:var(--accent-purple); border-color:rgba(139,92,246,0.4);" onclick="AttendanceManager.quickLogTime('${g.id}', 0.25)">+ 15m</button>
+                            <button class="btn-att-undo" onclick="AttendanceManager.resetTodayStudy('${g.id}')" title="Reset today's study log">↺ Reset</button>
+                        </div>
+
+                        <div class="att-edit-actions">
+                            <button class="btn-action-icon" onclick="AttendanceManager.openEditStudyModal('${g.id}')" title="Edit Study Goal">
+                                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 2 2h14a2 2 0 0 2 2v-7"></path><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path></svg>
+                            </button>
+                            <button class="btn-action-icon delete" onclick="AttendanceManager.deleteStudyGoal('${g.id}')" title="Delete">
+                                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            `;
+        }).join('');
+    },
+
+    syncDashboard() {
+        if (window.Dashboard && typeof window.Dashboard.renderDashboard === 'function') {
+            window.Dashboard.renderDashboard();
+        }
     },
 
     escapeHtml(str) {

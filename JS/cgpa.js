@@ -1,6 +1,6 @@
 /**
- * StudyZone - CGPA & Semester GPA Calculator Module (js/cgpa.js)
- * Day 5 - Task 2: Course SGPA, Cumulative CGPA, Target Planner, & Dashboard Sync.
+ * StudyZone - Academic Marks & 10.0 Scale GPA Calculator Module (js/cgpa.js)
+ * Semester-wise Subject Marks & SGPA, Automatic Cumulative CGPA Accumulation, and Target Planner.
  */
 
 document.addEventListener('DOMContentLoaded', () => {
@@ -9,41 +9,14 @@ document.addEventListener('DOMContentLoaded', () => {
 
 const CgpaManager = {
     activeTab: 'sgpa', // 'sgpa', 'cgpa', 'target'
-    GRADE_SCALE: {
-        'A+': 4.0, 'A': 4.0, 'A-': 3.7,
-        'B+': 3.3, 'B': 3.0, 'B-': 2.7,
-        'C+': 2.3, 'C': 2.0, 'D': 1.0, 'F': 0.0
-    },
+    activeSem: 'Sem 1',
 
     init() {
-        this.seedDefaultData();
+        if (window.Storage && typeof window.Storage.initCleanState === 'function') {
+            window.Storage.initCleanState();
+        }
         this.bindEvents();
         this.renderAll();
-    },
-
-    seedDefaultData() {
-        const existingSemesters = Storage.loadData('cgpa_semesters', null);
-        if (!existingSemesters || existingSemesters.length === 0) {
-            const defaults = [
-                { id: 'sem_1', name: 'Semester 1', gpa: 3.70, credits: 18 },
-                { id: 'sem_2', name: 'Semester 2', gpa: 3.85, credits: 18 },
-                { id: 'sem_3', name: 'Semester 3', gpa: 3.90, credits: 18 },
-                { id: 'sem_4', name: 'Semester 4', gpa: 3.80, credits: 18 },
-                { id: 'sem_5', name: 'Semester 5', gpa: 3.95, credits: 18 }
-            ];
-            Storage.saveData('cgpa_semesters', defaults);
-        }
-
-        const existingCourses = Storage.loadData('cgpa_courses', null);
-        if (!existingCourses || existingCourses.length === 0) {
-            const defaultCourses = [
-                { id: 'c_1', name: 'CS301 — Operating Systems', credits: 4, grade: 'A' },
-                { id: 'c_2', name: 'MATH204 — Linear Algebra', credits: 3, grade: 'A-' },
-                { id: 'c_3', name: 'CS302 — Databases', credits: 4, grade: 'A+' },
-                { id: 'c_4', name: 'CS405 — Web Engineering', credits: 3, grade: 'A' }
-            ];
-            Storage.saveData('cgpa_courses', defaultCourses);
-        }
     },
 
     bindEvents() {
@@ -58,14 +31,28 @@ const CgpaManager = {
                 document.querySelectorAll('.cgpa-panel').forEach(p => p.classList.remove('active'));
                 const targetPanel = document.getElementById(`panel-${this.activeTab}`);
                 if (targetPanel) targetPanel.classList.add('active');
+
+                if (this.activeTab === 'cgpa') {
+                    this.renderCGPA();
+                }
             });
         });
 
-        // SGPA Add Course Row
+        // Semester Selector in SGPA
+        const semSelector = document.getElementById('sgpa-sem-selector');
+        if (semSelector) {
+            semSelector.addEventListener('change', (e) => {
+                this.activeSem = e.target.value || 'Sem 1';
+                this.updateSGPATitles();
+                this.renderSGPA();
+            });
+        }
+
+        // SGPA Add Subject Row
         const addCourseBtn = document.getElementById('btn-add-course-row');
         if (addCourseBtn) addCourseBtn.addEventListener('click', () => this.addCourseRow());
 
-        // CGPA Add Semester Row
+        // CGPA Add Custom Semester Row
         const addSemBtn = document.getElementById('btn-add-sem-row');
         if (addSemBtn) addSemBtn.addEventListener('click', () => this.addSemRow());
 
@@ -75,36 +62,49 @@ const CgpaManager = {
             const el = document.getElementById(id);
             if (el) el.addEventListener('input', () => this.calculateTarget());
         });
+    },
 
-        // Export Report Button
-        const exportBtn = document.getElementById('btn-export-cgpa');
-        if (exportBtn) exportBtn.addEventListener('click', () => this.exportReport());
+    updateSGPATitles() {
+        const cardTitle = document.getElementById('sgpa-card-title');
+        const breakdownTitle = document.getElementById('sgpa-breakdown-title');
+        if (cardTitle) cardTitle.textContent = `${this.activeSem} GPA (out of 10)`;
+        if (breakdownTitle) breakdownTitle.textContent = `${this.activeSem} Subject Marks Breakdown`;
+    },
+
+    // Helper: Load courses map { 'Sem 1': [...], 'Sem 2': [...] }
+    loadCoursesMap() {
+        const data = Storage.loadData('cgpa_courses_v2', null);
+        if (data && typeof data === 'object' && !Array.isArray(data)) {
+            return data;
+        }
+        return {};
+    },
+
+    saveCoursesMap(map) {
+        Storage.saveData('cgpa_courses_v2', map);
     },
 
     // ==========================================
-    // TAB 1: SEMESTER GPA (SGPA)
+    // TAB 1: SEMESTER GPA (SEMESTER WISE)
     // ==========================================
     renderSGPA() {
         const container = document.getElementById('sgpa-courses-list');
         if (!container) return;
 
-        const courses = Storage.loadData('cgpa_courses', []);
+        const coursesMap = this.loadCoursesMap();
+        const courses = coursesMap[this.activeSem] || [];
 
         if (courses.length === 0) {
-            container.innerHTML = `<div class="empty-state"><p class="empty-state-text">No courses added. Click "+ Add Course" to start.</p></div>`;
+            container.innerHTML = `<div class="empty-state"><p class="empty-state-text">No subjects added for ${this.escapeHtml(this.activeSem)}. Click "+ Add Subject" to start entering marks.</p></div>`;
             this.calculateSGPA();
             return;
         }
 
         container.innerHTML = courses.map(c => `
             <div class="cgpa-row" data-id="${c.id}">
-                <input type="text" class="form-input-main course-name-input" value="${this.escapeHtml(c.name)}" placeholder="Course Name" onchange="CgpaManager.updateCourse('${c.id}', 'name', this.value)">
-                <input type="number" class="form-input-main course-credits-input" value="${c.credits}" min="1" max="10" placeholder="Credits" onchange="CgpaManager.updateCourse('${c.id}', 'credits', parseFloat(this.value))">
-                <select class="form-select-sm course-grade-select" onchange="CgpaManager.updateCourse('${c.id}', 'grade', this.value)">
-                    ${Object.keys(this.GRADE_SCALE).map(g => `
-                        <option value="${g}" ${g === c.grade ? 'selected' : ''}>${g} (${this.GRADE_SCALE[g].toFixed(1)})</option>
-                    `).join('')}
-                </select>
+                <input type="text" class="form-input-main course-name-input" value="${this.escapeHtml(c.name || '')}" placeholder="Subject Name (e.g. Operating Systems)" onchange="CgpaManager.updateCourse('${c.id}', 'name', this.value)">
+                <input type="number" class="form-input-main course-marks-input" value="${c.marks !== undefined && c.marks !== '' ? c.marks : ''}" min="0" placeholder="Marks Obtained" onchange="CgpaManager.updateCourse('${c.id}', 'marks', parseFloat(this.value))">
+                <input type="number" class="form-input-main course-total-input" value="${c.totalMarks !== undefined && c.totalMarks !== '' ? c.totalMarks : ''}" min="1" placeholder="Total Marks (e.g. 100)" onchange="CgpaManager.updateCourse('${c.id}', 'totalMarks', parseFloat(this.value))">
                 <button class="btn-action-icon delete" onclick="CgpaManager.removeCourseRow('${c.id}')" title="Remove">&times;</button>
             </div>
         `).join('');
@@ -113,87 +113,168 @@ const CgpaManager = {
     },
 
     addCourseRow() {
-        const courses = Storage.loadData('cgpa_courses', []);
-        courses.push({
+        if (!Storage.requireAuth()) return;
+
+        const coursesMap = this.loadCoursesMap();
+        if (!coursesMap[this.activeSem]) {
+            coursesMap[this.activeSem] = [];
+        }
+
+        coursesMap[this.activeSem].push({
             id: 'c_' + Date.now(),
-            name: `New Course ${courses.length + 1}`,
-            credits: 3,
-            grade: 'A'
+            name: '',
+            marks: '',
+            totalMarks: 100
         });
-        Storage.saveData('cgpa_courses', courses);
+
+        this.saveCoursesMap(coursesMap);
         this.renderSGPA();
     },
 
     updateCourse(id, field, value) {
-        const courses = Storage.loadData('cgpa_courses', []);
-        const item = courses.find(c => c.id === id);
+        const coursesMap = this.loadCoursesMap();
+        const list = coursesMap[this.activeSem] || [];
+        const item = list.find(c => c.id === id);
         if (!item) return;
 
         item[field] = value;
-        Storage.saveData('cgpa_courses', courses);
+        coursesMap[this.activeSem] = list;
+        this.saveCoursesMap(coursesMap);
         this.calculateSGPA();
     },
 
     removeCourseRow(id) {
-        const courses = Storage.loadData('cgpa_courses', []);
-        const updated = courses.filter(c => c.id !== id);
-        Storage.saveData('cgpa_courses', updated);
+        const coursesMap = this.loadCoursesMap();
+        if (coursesMap[this.activeSem]) {
+            coursesMap[this.activeSem] = coursesMap[this.activeSem].filter(c => c.id !== id);
+            this.saveCoursesMap(coursesMap);
+        }
         this.renderSGPA();
     },
 
     calculateSGPA() {
-        const courses = Storage.loadData('cgpa_courses', []);
-        let totalCredits = 0;
-        let totalPoints = 0;
+        const coursesMap = this.loadCoursesMap();
+        const courses = coursesMap[this.activeSem] || [];
+        let totalObtained = 0;
+        let grandTotalMarks = 0;
 
         courses.forEach(c => {
-            const credits = parseFloat(c.credits) || 0;
-            const points = this.GRADE_SCALE[c.grade] || 0.0;
-            totalCredits += credits;
-            totalPoints += (credits * points);
+            const m = parseFloat(c.marks);
+            const t = parseFloat(c.totalMarks);
+            if (!isNaN(m) && !isNaN(t) && t > 0) {
+                totalObtained += m;
+                grandTotalMarks += t;
+            }
         });
 
-        const sgpa = totalCredits > 0 ? (totalPoints / totalCredits) : 0.0;
+        const gpa10 = grandTotalMarks > 0 ? ((totalObtained / grandTotalMarks) * 10) : 0.0;
 
-        document.getElementById('sgpa-val-display').textContent = sgpa.toFixed(2);
-        document.getElementById('sgpa-credits-display').textContent = totalCredits;
-        document.getElementById('sgpa-points-display').textContent = totalPoints.toFixed(1);
+        const valEl = document.getElementById('sgpa-val-display');
+        const obtainedEl = document.getElementById('sgpa-obtained-display');
+        const totalEl = document.getElementById('sgpa-total-display');
+
+        if (valEl) valEl.textContent = grandTotalMarks > 0 ? gpa10.toFixed(2) : '0.00';
+        if (obtainedEl) obtainedEl.textContent = totalObtained;
+        if (totalEl) totalEl.textContent = grandTotalMarks;
+
+        // Recalculate Cumulative CGPA immediately
+        this.calculateCGPA();
     },
 
     // ==========================================
-    // TAB 2: CUMULATIVE CGPA
+    // TAB 2: CUMULATIVE CGPA (AUTO-ACCUMULATED FROM SGPA)
     // ==========================================
     renderCGPA() {
         const container = document.getElementById('cgpa-sems-list');
         if (!container) return;
 
-        const sems = Storage.loadData('cgpa_semesters', []);
+        const coursesMap = this.loadCoursesMap();
+        const customSems = Storage.loadData('cgpa_semesters', []);
 
-        if (sems.length === 0) {
-            container.innerHTML = `<div class="empty-state"><p class="empty-state-text">No semesters added. Click "+ Add Semester" to start.</p></div>`;
-            this.calculateCGPA();
+        const semList = [];
+
+        // 1. Gather all semesters entered under SGPA tab
+        Object.keys(coursesMap).forEach(semName => {
+            const courses = coursesMap[semName] || [];
+            let m = 0;
+            let t = 0;
+            courses.forEach(c => {
+                const cm = parseFloat(c.marks);
+                const ct = parseFloat(c.totalMarks);
+                if (!isNaN(cm) && !isNaN(ct) && ct > 0) {
+                    m += cm;
+                    t += ct;
+                }
+            });
+            if (t > 0) {
+                semList.push({
+                    id: 'sgpa_' + semName,
+                    name: semName,
+                    marks: m,
+                    totalMarks: t,
+                    isFromSGPA: true
+                });
+            }
+        });
+
+        // 2. Append any extra custom semester rows added directly in CGPA tab
+        customSems.forEach(cs => {
+            if (!semList.some(s => s.name === cs.name)) {
+                semList.push(cs);
+            }
+        });
+
+        if (semList.length === 0) {
+            container.innerHTML = `<div class="empty-state"><p class="empty-state-text">No semesters recorded yet. Select a semester in the "Semester GPA" tab and enter subject marks to automatically calculate CGPA.</p></div>`;
+            this.calculateCGPA(semList);
             return;
         }
 
-        container.innerHTML = sems.map(s => `
-            <div class="cgpa-row" data-id="${s.id}">
-                <input type="text" class="form-input-main sem-name-input" value="${this.escapeHtml(s.name)}" placeholder="Semester Name" onchange="CgpaManager.updateSem('${s.id}', 'name', this.value)">
-                <input type="number" class="form-input-main sem-gpa-input" value="${s.gpa}" min="0" max="4" step="0.01" placeholder="GPA (0.00-4.00)" onchange="CgpaManager.updateSem('${s.id}', 'gpa', parseFloat(this.value))">
-                <input type="number" class="form-input-main sem-credits-input" value="${s.credits}" min="1" max="30" placeholder="Total Credits" onchange="CgpaManager.updateSem('${s.id}', 'credits', parseFloat(this.value))">
-                <button class="btn-action-icon delete" onclick="CgpaManager.removeSemRow('${s.id}')" title="Remove">&times;</button>
-            </div>
-        `).join('');
+        container.innerHTML = semList.map(s => {
+            const m = parseFloat(s.marks);
+            const t = parseFloat(s.totalMarks);
+            const semGpa = (!isNaN(m) && !isNaN(t) && t > 0) ? ((m / t) * 10).toFixed(2) : '--';
 
-        this.calculateCGPA();
+            if (s.isFromSGPA) {
+                return `
+                    <div class="cgpa-row" data-id="${s.id}" style="align-items:center;">
+                        <div style="font-weight:700; color:var(--text-primary); font-size:0.9rem; flex:1;">
+                            ${this.escapeHtml(s.name)} 
+                            <span style="font-size:0.75rem; color:var(--accent-blue); font-weight:600; margin-left:6px; background:rgba(59,130,246,0.1); padding:2px 8px; border-radius:12px;">Auto-synced from SGPA</span>
+                        </div>
+                        <div style="font-size:0.86rem; font-weight:600; color:var(--text-secondary); margin-right:12px;">${s.marks} / ${s.totalMarks} Marks</div>
+                        <div class="sem-gpa-badge" style="font-size:0.84rem; font-weight:700; color:var(--accent-blue); background:var(--bg-card-hover); padding:6px 14px; border-radius:var(--radius-md); border:1px solid var(--border-subtle); white-space:nowrap;">
+                            GPA: ${semGpa}
+                        </div>
+                    </div>
+                `;
+            } else {
+                return `
+                    <div class="cgpa-row" data-id="${s.id}">
+                        <input type="text" class="form-input-main sem-name-input" value="${this.escapeHtml(s.name || '')}" placeholder="Semester Name" onchange="CgpaManager.updateSem('${s.id}', 'name', this.value)">
+                        <input type="number" class="form-input-main sem-marks-input" value="${s.marks !== undefined && s.marks !== '' ? s.marks : ''}" min="0" placeholder="Marks Obtained" onchange="CgpaManager.updateSem('${s.id}', 'marks', parseFloat(this.value))">
+                        <input type="number" class="form-input-main sem-total-input" value="${s.totalMarks !== undefined && s.totalMarks !== '' ? s.totalMarks : ''}" min="1" placeholder="Total Marks" onchange="CgpaManager.updateSem('${s.id}', 'totalMarks', parseFloat(this.value))">
+                        <div class="sem-gpa-badge" style="font-size:0.84rem; font-weight:700; color:var(--accent-blue); background:var(--bg-card-hover); padding:6px 12px; border-radius:var(--radius-md); border:1px solid var(--border-subtle); white-space:nowrap;">
+                            GPA: ${semGpa}
+                        </div>
+                        <button class="btn-action-icon delete" onclick="CgpaManager.removeSemRow('${s.id}')" title="Remove">&times;</button>
+                    </div>
+                `;
+            }
+        }).join('');
+
+        this.calculateCGPA(semList);
     },
 
     addSemRow() {
+        if (!Storage.requireAuth()) return;
+
         const sems = Storage.loadData('cgpa_semesters', []);
         sems.push({
             id: 'sem_' + Date.now(),
-            name: `Semester ${sems.length + 1}`,
-            gpa: 3.50,
-            credits: 18
+            name: `Custom Sem ${sems.length + 1}`,
+            marks: '',
+            totalMarks: 500
         });
         Storage.saveData('cgpa_semesters', sems);
         this.renderCGPA();
@@ -206,7 +287,7 @@ const CgpaManager = {
 
         item[field] = value;
         Storage.saveData('cgpa_semesters', sems);
-        this.calculateCGPA();
+        this.renderCGPA();
     },
 
     removeSemRow(id) {
@@ -216,43 +297,71 @@ const CgpaManager = {
         this.renderCGPA();
     },
 
-    calculateCGPA() {
-        const sems = Storage.loadData('cgpa_semesters', []);
-        let totalCredits = 0;
-        let totalPoints = 0;
+    calculateCGPA(providedSemList) {
+        let semList = providedSemList;
 
-        sems.forEach(s => {
-            const credits = parseFloat(s.credits) || 0;
-            const gpa = parseFloat(s.gpa) || 0.0;
-            totalCredits += credits;
-            totalPoints += (credits * gpa);
+        if (!semList) {
+            const coursesMap = this.loadCoursesMap();
+            const customSems = Storage.loadData('cgpa_semesters', []);
+            semList = [];
+            Object.keys(coursesMap).forEach(semName => {
+                const courses = coursesMap[semName] || [];
+                let m = 0, t = 0;
+                courses.forEach(c => {
+                    const cm = parseFloat(c.marks);
+                    const ct = parseFloat(c.totalMarks);
+                    if (!isNaN(cm) && !isNaN(ct) && ct > 0) {
+                        m += cm;
+                        t += ct;
+                    }
+                });
+                if (t > 0) {
+                    semList.push({ name: semName, marks: m, totalMarks: t });
+                }
+            });
+            customSems.forEach(cs => {
+                if (!semList.some(s => s.name === cs.name)) {
+                    semList.push(cs);
+                }
+            });
+        }
+
+        let totalObtained = 0;
+        let grandTotalMarks = 0;
+        let validSemestersCount = 0;
+
+        semList.forEach(s => {
+            const m = parseFloat(s.marks);
+            const t = parseFloat(s.totalMarks);
+            if (!isNaN(m) && !isNaN(t) && t > 0) {
+                totalObtained += m;
+                grandTotalMarks += t;
+                validSemestersCount++;
+            }
         });
 
-        const cgpa = totalCredits > 0 ? (totalPoints / totalCredits) : 0.0;
+        // Calculate Overall CGPA out of 10
+        const cgpa10 = grandTotalMarks > 0 ? ((totalObtained / grandTotalMarks) * 10) : 0.0;
 
-        let standing = 'Good Standing 👍';
-        if (cgpa >= 3.7) standing = 'First Class with Distinction 🌟';
-        else if (cgpa >= 3.3) standing = 'First Class Honors 🎓';
-        else if (cgpa >= 3.0) standing = 'Second Class Upper 📜';
-        else if (cgpa < 2.0) standing = 'Academic Probation ⚠️';
+        let standing = validSemestersCount > 0 ? 'Good Standing 👍' : 'No semesters calculated';
+        if (cgpa10 >= 8.5) standing = 'First Class with Distinction 🌟';
+        else if (cgpa10 >= 7.5) standing = 'First Class Honors 🎓';
+        else if (cgpa10 >= 6.0) standing = 'Second Class Division 📜';
+        else if (cgpa10 > 0 && cgpa10 < 4.0) standing = 'Needs Improvement ⚠️';
 
-        document.getElementById('cgpa-val-display').textContent = cgpa.toFixed(2);
-        document.getElementById('cgpa-credits-display').textContent = totalCredits;
-        document.getElementById('cgpa-standing-display').textContent = standing;
+        const valEl = document.getElementById('cgpa-val-display');
+        const semsCountEl = document.getElementById('cgpa-sems-count-display');
+        const totalEl = document.getElementById('cgpa-total-display');
+        const standingEl = document.getElementById('cgpa-standing-display');
 
-        // Auto Pre-fill Target Planner
-        const curGpaEl = document.getElementById('target-cur-gpa');
-        const curSemsEl = document.getElementById('target-cur-sems');
-        if (curGpaEl && !curGpaEl.value) curGpaEl.value = cgpa.toFixed(2);
-        if (curSemsEl && !curSemsEl.value) curSemsEl.value = sems.length;
+        if (valEl) valEl.textContent = grandTotalMarks > 0 ? cgpa10.toFixed(2) : '0.00';
+        if (semsCountEl) semsCountEl.textContent = validSemestersCount;
+        if (totalEl) totalEl.textContent = grandTotalMarks;
+        if (standingEl) standingEl.textContent = standing;
 
-        // Sync Dashboard
-        this.syncDashboard(cgpa.toFixed(2), sems.length);
+        this.syncDashboard(grandTotalMarks > 0 ? cgpa10.toFixed(2) : '0.00', validSemestersCount);
     },
 
-    // ==========================================
-    // TAB 3: TARGET CGPA PLANNER
-    // ==========================================
     calculateTarget() {
         const curGPA = parseFloat(document.getElementById('target-cur-gpa').value) || 0;
         const curSems = parseInt(document.getElementById('target-cur-sems').value, 10) || 0;
@@ -275,13 +384,13 @@ const CgpaManager = {
         const requiredFuturePoints = requiredTotalPoints - currentPoints;
         const reqAvgGPA = requiredFuturePoints / remSems;
 
-        if (reqAvgGPA > 4.0) {
+        if (reqAvgGPA > 10.0) {
             resultBox.className = 'target-result-card critical';
             resultBox.innerHTML = `
                 <div class="target-res-val" style="color:var(--accent-rose);">Mathematically Impossible</div>
-                <p>To reach <strong>${desiredCGPA.toFixed(2)}</strong> CGPA, you would need an average GPA of <strong>${reqAvgGPA.toFixed(2)}</strong> (> 4.00) in your remaining ${remSems} semester(s).</p>
+                <p>To reach <strong>${desiredCGPA.toFixed(2)}</strong> CGPA, you would need an average GPA of <strong>${reqAvgGPA.toFixed(2)}</strong> (> 10.00) in your remaining ${remSems} semester(s).</p>
             `;
-        } else if (reqAvgGPA <= 0) {
+        } else if (reqAvgGPA <= 0 && curGPA > 0) {
             resultBox.className = 'target-result-card safe';
             resultBox.innerHTML = `
                 <div class="target-res-val" style="color:var(--accent-emerald);">Target Already Achieved! 🎉</div>
@@ -292,36 +401,16 @@ const CgpaManager = {
             resultBox.innerHTML = `
                 <div class="target-res-header">Required Future Average GPA</div>
                 <div class="target-res-val" style="color:var(--accent-blue);">${reqAvgGPA.toFixed(2)}</div>
-                <p>You need to maintain an average GPA of <strong>${reqAvgGPA.toFixed(2)}</strong> over your remaining <strong>${remSems}</strong> semester(s) to achieve a final CGPA of <strong>${desiredCGPA.toFixed(2)}</strong>.</p>
+                <p>You need to maintain an average GPA of <strong>${reqAvgGPA.toFixed(2)}</strong> over your remaining <strong>${remSems}</strong> semester(s) to achieve your target CGPA of <strong>${desiredCGPA.toFixed(2)}</strong>.</p>
             `;
         }
-    },
-
-    // Export GPA Report
-    exportReport() {
-        const sems = Storage.loadData('cgpa_semesters', []);
-        const cgpa = document.getElementById('cgpa-val-display').textContent;
-        const standing = document.getElementById('cgpa-standing-display').textContent;
-
-        let content = `STUDYZONE ACADEMIC TRANSCRIPT REPORT\nGenerated: ${new Date().toLocaleString()}\nOverall CGPA: ${cgpa}\nAcademic Standing: ${standing}\n--------------------------------------------------\n\nSEMESTER BREAKDOWN:\n`;
-
-        sems.forEach((s, index) => {
-            content += `${index + 1}. ${s.name}: GPA ${s.gpa.toFixed(2)} (${s.credits} Credits)\n`;
-        });
-
-        const blob = new Blob([content], { type: 'text/plain;charset=utf-8' });
-        const link = document.createElement('a');
-        link.href = URL.createObjectURL(blob);
-        link.download = `academic_transcript_gpa.txt`;
-        link.click();
-        URL.revokeObjectURL(link.href);
     },
 
     syncDashboard(cgpaVal, semsCount) {
         const dashboardVal = document.getElementById('stat-cgpa-val');
         const dashboardSub = document.getElementById('stat-cgpa-subtitle');
         if (dashboardVal) dashboardVal.textContent = cgpaVal;
-        if (dashboardSub) dashboardSub.textContent = `Semester ${semsCount}`;
+        if (dashboardSub) dashboardSub.textContent = semsCount > 0 ? `Semester ${semsCount}` : 'No Semesters';
 
         if (window.Dashboard && typeof window.Dashboard.renderDashboard === 'function') {
             window.Dashboard.renderDashboard();
@@ -329,6 +418,7 @@ const CgpaManager = {
     },
 
     renderAll() {
+        this.updateSGPATitles();
         this.renderSGPA();
         this.renderCGPA();
         this.calculateTarget();

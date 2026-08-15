@@ -1,6 +1,6 @@
 /**
  * StudyZone - Interactive Weekly Timetable Module (js/timetable.js)
- * Day 4 - Task 2: 7-Day Weekly Schedule, Apple Calendar Card Aesthetics, & Dashboard Sync.
+ * 7-Day Weekly Schedule, Apple Calendar Card Aesthetics, & Zero Pre-saved Data.
  */
 
 document.addEventListener('DOMContentLoaded', () => {
@@ -13,7 +13,6 @@ const TimetableManager = {
     editingId: null,
 
     init() {
-        this.seedDefaultSchedule();
         this.bindEvents();
         this.determineToday();
         this.renderTimetable();
@@ -23,25 +22,6 @@ const TimetableManager = {
         const dayIndex = new Date().getDay(); // 0 is Sunday, 1 is Monday...
         const map = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
         this.activeMobileDay = map[dayIndex] || 'Monday';
-    },
-
-    seedDefaultSchedule() {
-        const existing = Storage.loadData('timetable', null);
-        if (!existing || existing.length === 0) {
-            const defaultClasses = [
-                { id: 'c1', day: 'Monday', subject: 'CS301 — Operating Systems', startTime: '09:00', endTime: '10:30', room: 'Hall B', professor: 'Prof. Harrison', color: 'blue' },
-                { id: 'c2', day: 'Monday', subject: 'MATH204 — Linear Algebra', startTime: '11:00', endTime: '12:30', room: 'Room 302', professor: 'Dr. Zhao', color: 'purple' },
-                { id: 'c3', day: 'Tuesday', subject: 'CS302 — Databases', startTime: '10:00', endTime: '11:30', room: 'Lab 2', professor: 'Prof. Davis', color: 'green' },
-                { id: 'c4', day: 'Wednesday', subject: 'CS301 — Operating Systems', startTime: '09:00', endTime: '10:30', room: 'Hall B', professor: 'Prof. Harrison', color: 'blue' },
-                { id: 'c5', day: 'Wednesday', subject: 'CS405 — Web Engineering Lab', startTime: '14:00', endTime: '16:00', room: 'Tech Hub 4', professor: 'Eng. Miller', color: 'amber' },
-                { id: 'c6', day: 'Thursday', subject: 'MATH204 — Linear Algebra', startTime: '11:00', endTime: '12:30', room: 'Room 302', professor: 'Dr. Zhao', color: 'purple' },
-                { id: 'c7', day: 'Friday', subject: 'CS302 — Databases Lab', startTime: '13:00', endTime: '15:00', room: 'Lab 2', professor: 'Prof. Davis', color: 'green' },
-                { id: 'c8', day: 'Saturday', subject: 'CS301 — Operating Systems', startTime: '09:00', endTime: '10:30', room: 'Hall B', professor: 'Prof. Harrison', color: 'blue' },
-                { id: 'c9', day: 'Saturday', subject: 'MATH204 — Linear Algebra', startTime: '11:00', endTime: '12:30', room: 'Room 302', professor: 'Dr. Zhao', color: 'purple' },
-                { id: 'c10', day: 'Saturday', subject: 'CS405 — Web Engineering Lab', startTime: '14:00', endTime: '16:00', room: 'Lab 4', professor: 'Tech Hub', color: 'amber' }
-            ];
-            Storage.saveData('timetable', defaultClasses);
-        }
     },
 
     bindEvents() {
@@ -55,7 +35,9 @@ const TimetableManager = {
         const backdrop = document.getElementById('timetable-modal-backdrop');
         if (closeBtn) closeBtn.addEventListener('click', () => this.closeModal());
         if (cancelBtn) cancelBtn.addEventListener('click', () => this.closeModal());
-        if (backdrop) backdrop.addEventListener('click', () => this.closeModal());
+        if (backdrop) backdrop.addEventListener('click', (e) => {
+            if (e.target === backdrop) this.closeModal();
+        });
 
         // Form Submit
         const form = document.getElementById('timetable-editor-form');
@@ -68,10 +50,18 @@ const TimetableManager = {
     },
 
     // 1. Open Modal for Create / Edit
-    openCreateModal(targetDay = 'Monday') {
+    openCreateModal(targetDay = null) {
+        if (!Storage.requireAuth()) return;
         this.editingId = null;
         document.getElementById('timetable-modal-title').textContent = 'Add Scheduled Class';
-        document.getElementById('class-day-input').value = targetDay;
+        
+        let selectedDay = targetDay;
+        if (!selectedDay) {
+            const map = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
+            selectedDay = map[new Date().getDay()] || 'Monday';
+        }
+
+        document.getElementById('class-day-input').value = selectedDay;
         document.getElementById('class-subject-input').value = '';
         document.getElementById('class-start-input').value = '09:00';
         document.getElementById('class-end-input').value = '10:30';
@@ -84,6 +74,7 @@ const TimetableManager = {
     },
 
     openEditModal(id) {
+        if (!Storage.requireAuth()) return;
         const list = Storage.loadData('timetable', []);
         const item = list.find(c => c.id === id);
         if (!item) return;
@@ -110,6 +101,8 @@ const TimetableManager = {
 
     // 2. Save Class Schedule
     handleSaveClass() {
+        if (!Storage.requireAuth()) return;
+
         const day = document.getElementById('class-day-input').value;
         const subject = document.getElementById('class-subject-input').value.trim();
         const startTime = document.getElementById('class-start-input').value;
@@ -172,14 +165,29 @@ const TimetableManager = {
         }
     },
 
-    // 5. Render Weekly Grid & Day Tabs
+    getDayNameFromDate(dateStr) {
+        if (!dateStr) return null;
+        const parts = dateStr.split('-');
+        if (parts.length !== 3) return null;
+        const year = parseInt(parts[0], 10);
+        const month = parseInt(parts[1], 10) - 1;
+        const day = parseInt(parts[2], 10);
+        if (isNaN(year) || isNaN(month) || isNaN(day)) return null;
+        const d = new Date(year, month, day);
+        const map = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
+        return map[d.getDay()];
+    },
+
+    // 5. Render Weekly Grid & Day Tabs (Includes Classes, Tasks, & Assignments)
     renderTimetable() {
         const gridContainer = document.getElementById('timetable-grid-container');
         const tabsContainer = document.getElementById('timetable-mobile-tabs');
         if (!gridContainer) return;
 
         const schedule = Storage.loadData('timetable', []);
-        const todayName = this.days[new Date().getDay() === 0 ? 6 : new Date().getDay() - 1]; // Map Mon=0 to Sun=6
+        const tasks = Storage.loadTasks();
+        const assignments = Storage.loadAssignments();
+        const todayName = this.days[new Date().getDay() === 0 ? 6 : new Date().getDay() - 1];
 
         // Render Mobile Tabs
         if (tabsContainer) {
@@ -193,8 +201,48 @@ const TimetableManager = {
 
         // Render 7-Day Grid
         gridContainer.innerHTML = this.days.map(day => {
-            const dayClasses = schedule.filter(c => c.day === day);
-            dayClasses.sort((a, b) => (a.startTime || '').localeCompare(b.startTime || ''));
+            // 1. Classes for this day
+            const dayClasses = schedule.filter(c => c.day === day).map(c => ({
+                type: 'class',
+                id: c.id,
+                title: c.subject,
+                timeText: `${this.formatTime(c.startTime)} - ${this.formatTime(c.endTime)}`,
+                sortTime: c.startTime || '00:00',
+                metaRoom: c.room,
+                metaProf: c.professor,
+                color: c.color || 'blue'
+            }));
+
+            // 2. Tasks for this day (Rendered in Purple)
+            const dayTasks = tasks
+                .filter(t => this.getDayNameFromDate(t.dueDate) === day)
+                .map(t => ({
+                    type: 'task',
+                    id: t.id,
+                    title: t.title,
+                    timeText: `📋 TASK • ${t.priority.toUpperCase()}`,
+                    sortTime: '23:57',
+                    meta: `Due: ${t.dueDate}${t.course ? ' • ' + t.course : ''}`,
+                    color: 'purple',
+                    isDone: t.status === 'completed'
+                }));
+
+            // 3. Assignments for this day (Rendered in Rose / Red)
+            const dayAssignments = assignments
+                .filter(a => this.getDayNameFromDate(a.dueDate) === day)
+                .map(a => ({
+                    type: 'assignment',
+                    id: a.id,
+                    title: a.title,
+                    timeText: `📚 ASSIGNMENT • ${(a.status || 'Pending').toUpperCase()}`,
+                    sortTime: '23:58',
+                    meta: `Due: ${a.dueDate}${a.course ? ' • ' + a.course : ''}`,
+                    color: 'rose',
+                    isSubmitted: a.status === 'Submitted' || a.status === 'Graded'
+                }));
+
+            const allItems = [...dayClasses, ...dayTasks, ...dayAssignments];
+            allItems.sort((a, b) => (a.sortTime || '').localeCompare(b.sortTime || ''));
 
             const isToday = (day === todayName);
             const isMobileHidden = (day !== this.activeMobileDay);
@@ -210,25 +258,55 @@ const TimetableManager = {
                     </div>
 
                     <div class="day-col-body">
-                        ${dayClasses.length === 0 ? `
-                            <div class="empty-day-slot">No classes</div>
-                        ` : dayClasses.map(c => `
-                            <div class="class-card class-color-${c.color || 'blue'}">
-                                <div class="class-card-time">${this.formatTime(c.startTime)} - ${this.formatTime(c.endTime)}</div>
-                                <div class="class-card-subject">${this.escapeHtml(c.subject)}</div>
-                                ${c.room || c.professor ? `
-                                    <div class="class-card-meta">
-                                        ${c.room ? `<span>📍 ${this.escapeHtml(c.room)}</span>` : ''}
-                                        ${c.professor ? `<span>👨‍🏫 ${this.escapeHtml(c.professor)}</span>` : ''}
-                                    </div>
-                                ` : ''}
+                        ${allItems.length === 0 ? `
+                            <div class="empty-day-slot">No classes or items</div>
+                        ` : allItems.map(item => {
+                            if (item.type === 'class') {
+                                return `
+                                    <div class="class-card class-color-${item.color}">
+                                        <div class="class-card-time">${item.timeText}</div>
+                                        <div class="class-card-subject">${this.escapeHtml(item.title)}</div>
+                                        ${item.metaRoom || item.metaProf ? `
+                                            <div class="class-card-meta">
+                                                ${item.metaRoom ? `<span>📍 ${this.escapeHtml(item.metaRoom)}</span>` : ''}
+                                                ${item.metaProf ? `<span>👨‍🏫 ${this.escapeHtml(item.metaProf)}</span>` : ''}
+                                            </div>
+                                        ` : ''}
 
-                                <div class="class-card-hover-actions">
-                                    <button onclick="TimetableManager.openEditModal('${c.id}')" title="Edit">✎</button>
-                                    <button onclick="TimetableManager.deleteClass('${c.id}')" title="Delete">&times;</button>
-                                </div>
-                            </div>
-                        `).join('')}
+                                        <div class="class-card-hover-actions">
+                                            <button onclick="TimetableManager.openEditModal('${item.id}')" title="Edit">✎</button>
+                                            <button onclick="TimetableManager.deleteClass('${item.id}')" title="Delete">&times;</button>
+                                        </div>
+                                    </div>
+                                `;
+                            } else if (item.type === 'task') {
+                                return `
+                                    <div class="class-card class-color-purple ${item.isDone ? 'submitted' : ''}">
+                                        <div class="class-card-time" style="font-weight:800; font-size:0.68rem; color:var(--accent-purple);">${item.timeText}</div>
+                                        <div class="class-card-subject" style="${item.isDone ? 'text-decoration:line-through; opacity:0.6;' : ''}">${this.escapeHtml(item.title)}</div>
+                                        <div class="class-card-meta">
+                                            <span>${this.escapeHtml(item.meta)}</span>
+                                        </div>
+                                        <div class="class-card-hover-actions">
+                                            <button onclick="AppRouter.switchView('tasks')" title="View in Tasks">&rarr;</button>
+                                        </div>
+                                    </div>
+                                `;
+                            } else if (item.type === 'assignment') {
+                                return `
+                                    <div class="class-card class-color-rose ${item.isSubmitted ? 'submitted' : ''}">
+                                        <div class="class-card-time" style="font-weight:800; font-size:0.68rem; color:var(--accent-rose);">${item.timeText}</div>
+                                        <div class="class-card-subject" style="${item.isSubmitted ? 'opacity:0.6;' : ''}">${this.escapeHtml(item.title)}</div>
+                                        <div class="class-card-meta">
+                                            <span>${this.escapeHtml(item.meta)}</span>
+                                        </div>
+                                        <div class="class-card-hover-actions">
+                                            <button onclick="AppRouter.switchView('assignments')" title="View in Assignments">&rarr;</button>
+                                        </div>
+                                    </div>
+                                `;
+                            }
+                        }).join('')}
                     </div>
                 </div>
             `;

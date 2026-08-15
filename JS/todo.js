@@ -76,13 +76,17 @@ const TodoManager = {
 
         // Modal Close triggers
         const closeModalBtn = document.getElementById('close-task-modal');
-        const modalBackdrop = document.getElementById('task-modal-backdrop');
+        const modalBackdrop = document.getElementById('task-edit-modal');
         if (closeModalBtn) closeModalBtn.addEventListener('click', () => this.closeEditModal());
-        if (modalBackdrop) modalBackdrop.addEventListener('click', () => this.closeEditModal());
+        if (modalBackdrop) modalBackdrop.addEventListener('click', (e) => {
+            if (e.target === modalBackdrop) this.closeEditModal();
+        });
     },
 
     // 1. Add New Task
     handleAddTask() {
+        if (!Storage.requireAuth()) return;
+
         const titleInput = document.getElementById('task-title-input');
         const courseInput = document.getElementById('task-course-input');
         const priorityInput = document.getElementById('task-priority-input');
@@ -94,12 +98,22 @@ const TodoManager = {
             return;
         }
 
+        let dueDate = dateInput && dateInput.value ? dateInput.value : new Date().toISOString().split('T')[0];
+        
+        // Strict 4-digit year validation (rejects 004, 0004, etc.)
+        const yearPart = parseInt(dueDate.split('-')[0], 10);
+        if (isNaN(yearPart) || yearPart < 2020 || yearPart > 2099) {
+            alert('Invalid year! Please enter a valid 4-digit year (e.g. 2026).');
+            dateInput?.focus();
+            return;
+        }
+
         const newTask = {
             id: 'task_' + Date.now(),
             title: titleInput.value.trim(),
-            course: courseInput ? courseInput.value : 'General',
+            course: courseInput && courseInput.value.trim() ? courseInput.value.trim() : 'General',
             priority: priorityInput ? priorityInput.value : 'medium',
-            dueDate: dateInput && dateInput.value ? dateInput.value : new Date().toISOString().split('T')[0],
+            dueDate: dueDate,
             status: 'todo',
             createdAt: new Date().toISOString()
         };
@@ -107,13 +121,31 @@ const TodoManager = {
         Storage.saveTask(newTask);
 
         titleInput.value = '';
+        if (courseInput) courseInput.value = '';
         if (dateInput) dateInput.value = '';
 
         this.renderTasks();
 
+        // Smoothly scroll container into view and focus newly added task
+        const listContainer = document.getElementById('todo-list-container');
+        if (listContainer) {
+            listContainer.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+        }
+
+        if (window.AppRouter && typeof window.AppRouter.recordActivityForStreak === 'function') {
+            window.AppRouter.recordActivityForStreak();
+        }
+
         // Sync Dashboard stats
         if (window.Dashboard && typeof window.Dashboard.renderDashboard === 'function') {
             window.Dashboard.renderDashboard();
+        }
+        this.syncTimetable();
+    },
+
+    syncTimetable() {
+        if (window.TimetableManager && typeof window.TimetableManager.renderTimetable === 'function') {
+            window.TimetableManager.renderTimetable();
         }
     },
 
@@ -131,6 +163,7 @@ const TodoManager = {
         if (window.Dashboard && typeof window.Dashboard.renderDashboard === 'function') {
             window.Dashboard.renderDashboard();
         }
+        this.syncTimetable();
     },
 
     // 3. Delete Task
@@ -142,6 +175,7 @@ const TodoManager = {
             if (window.Dashboard && typeof window.Dashboard.renderDashboard === 'function') {
                 window.Dashboard.renderDashboard();
             }
+            this.syncTimetable();
         }
     },
 
@@ -155,6 +189,7 @@ const TodoManager = {
         if (window.Dashboard && typeof window.Dashboard.renderDashboard === 'function') {
             window.Dashboard.renderDashboard();
         }
+        this.syncTimetable();
     },
 
     // 5. Edit Modal Functions
@@ -193,6 +228,14 @@ const TodoManager = {
             return;
         }
 
+        if (dueDate) {
+            const yearPart = parseInt(dueDate.split('-')[0], 10);
+            if (isNaN(yearPart) || yearPart < 2020 || yearPart > 2099) {
+                alert('Invalid year! Please enter a valid 4-digit year (e.g. 2026).');
+                return;
+            }
+        }
+
         Storage.updateTask(this.editingTaskId, { title, course, priority, dueDate });
         this.closeEditModal();
         this.renderTasks();
@@ -200,6 +243,7 @@ const TodoManager = {
         if (window.Dashboard && typeof window.Dashboard.renderDashboard === 'function') {
             window.Dashboard.renderDashboard();
         }
+        this.syncTimetable();
     },
 
     // 6. Main Render Engine
@@ -250,7 +294,7 @@ const TodoManager = {
             listContainer.innerHTML = `
                 <div class="empty-state">
                     <span class="empty-state-icon">📋</span>
-                    <p class="empty-state-text">No tasks match your current filter or search.</p>
+                    <p class="empty-state-text">No tasks yet. Click '+ Add Task' to begin.</p>
                 </div>
             `;
             return;

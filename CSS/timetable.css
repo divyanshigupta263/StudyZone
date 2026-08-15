@@ -64,47 +64,67 @@
 }
 
 .day-col-header {
-    padding: 14px 12px;
+    padding: 14px 10px;
     background-color: var(--bg-topbar);
     border-bottom: 1px solid var(--border-subtle);
     display: flex;
     align-items: center;
     justify-content: space-between;
+    gap: 6px;
 }
 
 .day-title-group {
     display: flex;
     align-items: center;
-    gap: 6px;
+    gap: 4px;
+    min-width: 0;
+    flex: 1;
+    overflow: hidden;
 }
 
 .day-name {
     font-family: var(--font-heading);
-    font-size: 0.88rem;
+    font-size: 0.84rem;
     font-weight: 700;
     color: var(--text-primary);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
 }
 
 .today-badge {
-    font-size: 0.62rem;
+    font-size: 0.58rem;
     font-weight: 800;
-    padding: 2px 5px;
+    padding: 2px 4px;
     background-color: var(--accent-blue);
     color: #FFFFFF;
     border-radius: 4px;
+    flex-shrink: 0;
 }
 
 .btn-add-class-sm {
-    background: none;
-    border: none;
-    color: var(--text-muted);
+    background: var(--bg-elevated);
+    border: 1px solid var(--border-subtle);
+    color: var(--text-primary);
     font-size: 1.1rem;
+    font-weight: 700;
     cursor: pointer;
     line-height: 1;
+    width: 24px;
+    height: 24px;
+    min-width: 24px;
+    border-radius: var(--radius-sm);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    transition: all var(--transition-fast);
 }
 
 .btn-add-class-sm:hover {
-    color: var(--accent-blue);
+    color: #FFFFFF;
+    background-color: var(--accent-blue);
+    border-color: var(--accent-blue);
 }
 
 .day-col-body {
@@ -143,16 +163,24 @@
     box-shadow: var(--shadow-md);
 }
 
-.class-card.class-color-blue { border-left-color: var(--accent-blue); }
-.class-card.class-color-green { border-left-color: var(--accent-emerald); }
-.class-card.class-color-purple { border-left-color: var(--accent-purple); }
-.class-card.class-color-amber { border-left-color: var(--accent-amber); }
-.class-card.class-color-rose { border-left-color: var(--accent-rose); }
+.class-card.class-color-blue { border-left-color: #3B82F6 !important; }
+.class-card.class-color-blue .class-card-time { color: #3B82F6 !important; }
+
+.class-card.class-color-green { border-left-color: #10B981 !important; }
+.class-card.class-color-green .class-card-time { color: #10B981 !important; }
+
+.class-card.class-color-purple { border-left-color: #8B5CF6 !important; }
+.class-card.class-color-purple .class-card-time { color: #8B5CF6 !important; }
+
+.class-card.class-color-amber { border-left-color: #F59E0B !important; }
+.class-card.class-color-amber .class-card-time { color: #F59E0B !important; }
+
+.class-card.class-color-rose { border-left-color: #EF4444 !important; }
+.class-card.class-color-rose .class-card-time { color: #EF4444 !important; }
 
 .class-card-time {
     font-size: 0.72rem;
     font-weight: 700;
-    color: var(--accent-blue);
 }
 
 .class-card-subject {
