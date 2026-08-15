@@ -1,0 +1,146 @@
+/* ==========================================================================
+   StudyZone - Todo & Task Manager Styles (css/todo.css)
+   Inspired by Linear Issue Tracker Layout
+   ========================================================================== */
+
+.task-filter-bar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 20px;
+    gap: 16px;
+    flex-wrap: wrap;
+}
+
+.filter-pills {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    background-color: var(--bg-card);
+    padding: 4px;
+    border-radius: var(--radius-md);
+    border: 1px solid var(--border-subtle);
+}
+
+.filter-btn {
+    background: none;
+    border: none;
+    padding: 6px 14px;
+    border-radius: var(--radius-sm);
+    font-size: 0.8rem;
+    font-weight: 500;
+    color: var(--text-secondary);
+    cursor: pointer;
+    transition: all var(--transition-fast);
+}
+
+.filter-btn:hover {
+    color: var(--text-primary);
+}
+
+.filter-btn.active {
+    background-color: var(--bg-elevated);
+    color: var(--text-primary);
+    font-weight: 600;
+    box-shadow: var(--shadow-sm);
+}
+
+.tasks-container {
+    background-color: var(--bg-card);
+    border: 1px solid var(--border-subtle);
+    border-radius: var(--radius-xl);
+    overflow: hidden;
+}
+
+.task-item {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 14px 20px;
+    border-bottom: 1px solid var(--border-subtle);
+    transition: background-color var(--transition-fast);
+}
+
+.task-item:last-child {
+    border-bottom: none;
+}
+
+.task-item:hover {
+    background-color: var(--bg-card-hover);
+}
+
+.task-left {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    flex: 1;
+}
+
+.task-checkbox {
+    width: 18px;
+    height: 18px;
+    border-radius: 4px;
+    border: 2px solid var(--border-medium);
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all var(--transition-fast);
+}
+
+.task-checkbox.checked {
+    background-color: var(--accent-indigo);
+    border-color: var(--accent-indigo);
+    color: #FFFFFF;
+}
+
+.task-title {
+    font-size: 0.9rem;
+    font-weight: 500;
+    color: var(--text-primary);
+}
+
+.task-item.completed .task-title {
+    text-decoration: line-through;
+    color: var(--text-muted);
+}
+
+.task-right {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.badge {
+    font-size: 0.72rem;
+    font-weight: 600;
+    padding: 3px 8px;
+    border-radius: 12px;
+    letter-spacing: 0.02em;
+}
+
+.badge-course {
+    background-color: var(--bg-elevated);
+    color: var(--text-secondary);
+    border: 1px solid var(--border-subtle);
+}
+
+.badge-priority-high {
+    background-color: rgba(244, 63, 94, 0.15);
+    color: var(--accent-rose);
+}
+
+.badge-priority-medium {
+    background-color: rgba(245, 158, 11, 0.15);
+    color: var(--accent-amber);
+}
+
+.badge-priority-low {
+    background-color: rgba(16, 185, 129, 0.15);
+    color: var(--accent-emerald);
+}
+
+.task-due-date {
+    font-size: 0.78rem;
+    color: var(--text-muted);
+}
