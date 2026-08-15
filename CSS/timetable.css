@@ -1,0 +1,227 @@
+/* ==========================================================================
+   StudyZone - Timetable Module Styles (css/timetable.css)
+   Day 4 - Task 2: 7-Column Weekly Grid & Google / Apple Calendar Card Blocks
+   ========================================================================== */
+
+/* Mobile Day Tabs (Visible on Tablet/Mobile) */
+.timetable-day-tabs {
+    display: none;
+    align-items: center;
+    gap: 6px;
+    background-color: var(--bg-card);
+    padding: 6px;
+    border-radius: var(--radius-lg);
+    border: 1px solid var(--border-subtle);
+    margin-bottom: 20px;
+    overflow-x: auto;
+}
+
+.timetable-tab-btn {
+    flex: 1;
+    background: none;
+    border: none;
+    padding: 8px 12px;
+    border-radius: var(--radius-md);
+    font-size: 0.82rem;
+    font-weight: 600;
+    color: var(--text-secondary);
+    cursor: pointer;
+    transition: all var(--transition-fast);
+}
+
+.timetable-tab-btn.active {
+    background-color: var(--bg-elevated);
+    color: var(--accent-blue);
+    box-shadow: var(--shadow-sm);
+}
+
+.timetable-tab-btn.is-today {
+    border: 1px solid var(--accent-blue);
+}
+
+/* 7-Day Desktop Grid */
+.timetable-grid-7col {
+    display: grid;
+    grid-template-columns: repeat(7, 1fr);
+    gap: 14px;
+    margin-bottom: 32px;
+}
+
+.timetable-day-col {
+    background-color: var(--bg-card);
+    border: 1px solid var(--border-subtle);
+    border-radius: var(--radius-xl);
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+    transition: all var(--transition-fast);
+}
+
+/* Visual Highlight for Current Day Column */
+.timetable-day-col.is-today {
+    border-color: var(--accent-blue);
+    box-shadow: 0 0 0 1px var(--accent-blue), var(--shadow-md);
+}
+
+.day-col-header {
+    padding: 14px 12px;
+    background-color: var(--bg-topbar);
+    border-bottom: 1px solid var(--border-subtle);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+
+.day-title-group {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.day-name {
+    font-family: var(--font-heading);
+    font-size: 0.88rem;
+    font-weight: 700;
+    color: var(--text-primary);
+}
+
+.today-badge {
+    font-size: 0.62rem;
+    font-weight: 800;
+    padding: 2px 5px;
+    background-color: var(--accent-blue);
+    color: #FFFFFF;
+    border-radius: 4px;
+}
+
+.btn-add-class-sm {
+    background: none;
+    border: none;
+    color: var(--text-muted);
+    font-size: 1.1rem;
+    cursor: pointer;
+    line-height: 1;
+}
+
+.btn-add-class-sm:hover {
+    color: var(--accent-blue);
+}
+
+.day-col-body {
+    padding: 12px;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    flex: 1;
+    min-height: 380px;
+}
+
+.empty-day-slot {
+    font-size: 0.78rem;
+    color: var(--text-muted);
+    text-align: center;
+    margin-top: 40px;
+    font-style: italic;
+}
+
+/* Class Calendar Block Cards */
+.class-card {
+    background-color: var(--bg-app);
+    border-left: 4px solid var(--accent-blue);
+    border-radius: var(--radius-md);
+    padding: 12px;
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    box-shadow: var(--shadow-sm);
+    transition: all var(--transition-fast);
+}
+
+.class-card:hover {
+    transform: translateY(-2px);
+    box-shadow: var(--shadow-md);
+}
+
+.class-card.class-color-blue { border-left-color: var(--accent-blue); }
+.class-card.class-color-green { border-left-color: var(--accent-emerald); }
+.class-card.class-color-purple { border-left-color: var(--accent-purple); }
+.class-card.class-color-amber { border-left-color: var(--accent-amber); }
+.class-card.class-color-rose { border-left-color: var(--accent-rose); }
+
+.class-card-time {
+    font-size: 0.72rem;
+    font-weight: 700;
+    color: var(--accent-blue);
+}
+
+.class-card-subject {
+    font-family: var(--font-heading);
+    font-size: 0.85rem;
+    font-weight: 700;
+    color: var(--text-primary);
+    line-height: 1.25;
+}
+
+.class-card-meta {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    font-size: 0.72rem;
+    color: var(--text-muted);
+    margin-top: 4px;
+}
+
+.class-card-hover-actions {
+    position: absolute;
+    top: 6px;
+    right: 6px;
+    display: flex;
+    gap: 4px;
+    opacity: 0;
+    transition: opacity var(--transition-fast);
+}
+
+.class-card:hover .class-card-hover-actions {
+    opacity: 1;
+}
+
+.class-card-hover-actions button {
+    background-color: var(--bg-card);
+    border: 1px solid var(--border-subtle);
+    color: var(--text-secondary);
+    border-radius: 4px;
+    width: 20px;
+    height: 20px;
+    font-size: 0.75rem;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.class-card-hover-actions button:hover {
+    color: var(--accent-blue);
+}
+
+/* Responsive Grid Adapters */
+@media (max-width: 1200px) {
+    .timetable-grid-7col {
+        grid-template-columns: repeat(4, 1fr);
+    }
+    .timetable-day-col.mobile-hidden {
+        display: flex;
+    }
+}
+
+@media (max-width: 850px) {
+    .timetable-day-tabs {
+        display: flex;
+    }
+    .timetable-grid-7col {
+        grid-template-columns: 1fr;
+    }
+    .timetable-day-col.mobile-hidden {
+        display: none;
+    }
+}

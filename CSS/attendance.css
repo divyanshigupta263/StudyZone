@@ -1,0 +1,278 @@
+/* ==========================================================================
+   StudyZone - Attendance Module Styles (css/attendance.css)
+   Day 5 - Task 1: Top Overview Card, Progress Bars, Quick Increments & Scratchpad
+   ========================================================================== */
+
+/* Top Health Overview Card */
+.att-overview-card {
+    background-color: var(--bg-card);
+    border: 1px solid var(--border-subtle);
+    border-radius: var(--radius-xl);
+    padding: 24px;
+    margin-bottom: 28px;
+    box-shadow: var(--shadow-sm);
+}
+
+.att-overview-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 16px;
+}
+
+.att-overview-title {
+    font-family: var(--font-heading);
+    font-size: 1.1rem;
+    font-weight: 700;
+    color: var(--text-primary);
+}
+
+.att-overview-value-group {
+    display: flex;
+    align-items: baseline;
+    gap: 12px;
+    margin-bottom: 12px;
+}
+
+.att-overview-pct {
+    font-family: var(--font-heading);
+    font-size: 2.5rem;
+    font-weight: 800;
+    color: var(--text-primary);
+    line-height: 1;
+}
+
+.att-overview-subtext {
+    font-size: 0.86rem;
+    color: var(--text-secondary);
+    font-weight: 500;
+}
+
+.att-overall-progress-bg {
+    width: 100%;
+    height: 10px;
+    background-color: var(--bg-elevated);
+    border-radius: 5px;
+    overflow: hidden;
+}
+
+.att-overall-progress-fill {
+    height: 100%;
+    border-radius: 5px;
+    transition: width var(--transition-medium), background-color var(--transition-medium);
+}
+
+/* 2-Column Layout: Left Subjects Grid & Right Scratchpad Calculator */
+.att-content-grid {
+    display: grid;
+    grid-template-columns: 2fr 1fr;
+    gap: 24px;
+}
+
+.att-cards-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+    gap: 20px;
+}
+
+.attendance-card {
+    background-color: var(--bg-card);
+    border: 1px solid var(--border-subtle);
+    border-radius: var(--radius-xl);
+    padding: 20px;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    gap: 14px;
+    box-shadow: var(--shadow-sm);
+    transition: all var(--transition-fast);
+}
+
+.attendance-card:hover {
+    border-color: var(--border-medium);
+    box-shadow: var(--shadow-md);
+}
+
+.att-card-header {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+}
+
+.att-card-title {
+    font-family: var(--font-heading);
+    font-size: 1.05rem;
+    font-weight: 700;
+    color: var(--text-primary);
+    margin-top: 4px;
+}
+
+.att-card-score {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+    gap: 4px;
+}
+
+.att-card-pct {
+    font-family: var(--font-heading);
+    font-size: 1.5rem;
+    font-weight: 800;
+    line-height: 1;
+}
+
+.att-card-counts {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    font-size: 0.82rem;
+    color: var(--text-secondary);
+}
+
+.att-progress-bar-bg {
+    width: 100%;
+    height: 6px;
+    background-color: var(--bg-elevated);
+    border-radius: 3px;
+    overflow: hidden;
+}
+
+.att-progress-bar-fill {
+    height: 100%;
+    border-radius: 3px;
+    transition: width var(--transition-fast);
+}
+
+.att-advice-box {
+    font-size: 0.78rem;
+    padding: 10px 12px;
+    border-radius: var(--radius-md);
+    background-color: var(--bg-elevated);
+    color: var(--text-primary);
+    line-height: 1.4;
+    border-left: 3px solid var(--accent-blue);
+}
+
+.att-advice-box.safe { border-left-color: var(--accent-emerald); background-color: rgba(16, 185, 129, 0.08); }
+.att-advice-box.warning { border-left-color: var(--accent-amber); background-color: rgba(245, 158, 11, 0.08); }
+.att-advice-box.critical { border-left-color: var(--accent-rose); background-color: rgba(239, 68, 68, 0.08); }
+
+.att-card-footer {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding-top: 10px;
+    border-top: 1px solid var(--border-subtle);
+}
+
+.att-action-btns {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.btn-att-present {
+    height: 32px;
+    padding: 0 10px;
+    background-color: rgba(16, 185, 129, 0.15);
+    border: 1px solid rgba(16, 185, 129, 0.3);
+    color: var(--accent-emerald);
+    border-radius: var(--radius-md);
+    font-size: 0.76rem;
+    font-weight: 700;
+    cursor: pointer;
+    transition: all var(--transition-fast);
+}
+
+.btn-att-present:hover {
+    background-color: var(--accent-emerald);
+    color: #FFFFFF;
+}
+
+.btn-att-absent {
+    height: 32px;
+    padding: 0 10px;
+    background-color: rgba(239, 68, 68, 0.15);
+    border: 1px solid rgba(239, 68, 68, 0.3);
+    color: var(--accent-rose);
+    border-radius: var(--radius-md);
+    font-size: 0.76rem;
+    font-weight: 700;
+    cursor: pointer;
+    transition: all var(--transition-fast);
+}
+
+.btn-att-absent:hover {
+    background-color: var(--accent-rose);
+    color: #FFFFFF;
+}
+
+.btn-att-undo {
+    height: 32px;
+    padding: 0 8px;
+    background-color: var(--bg-elevated);
+    border: 1px solid var(--border-subtle);
+    color: var(--text-muted);
+    border-radius: var(--radius-md);
+    font-size: 0.74rem;
+    font-weight: 500;
+    cursor: pointer;
+}
+
+.btn-att-undo:hover {
+    color: var(--text-primary);
+}
+
+/* Scratchpad Calculator Card */
+.scratchpad-card {
+    background-color: var(--bg-card);
+    border: 1px solid var(--border-subtle);
+    border-radius: var(--radius-xl);
+    padding: 22px;
+    box-shadow: var(--shadow-sm);
+    height: fit-content;
+}
+
+.scratchpad-title {
+    font-family: var(--font-heading);
+    font-size: 1rem;
+    font-weight: 700;
+    color: var(--text-primary);
+    margin-bottom: 14px;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.scratch-result-box {
+    margin-top: 16px;
+    padding: 14px;
+    background-color: var(--bg-elevated);
+    border-radius: var(--radius-md);
+    border: 1px solid var(--border-subtle);
+}
+
+.scratch-result-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 6px;
+}
+
+.scratch-result-pct {
+    font-family: var(--font-heading);
+    font-size: 1.4rem;
+    font-weight: 800;
+}
+
+.scratch-result-advice {
+    font-size: 0.78rem;
+    color: var(--text-secondary);
+    line-height: 1.4;
+}
+
+@media (max-width: 1000px) {
+    .att-content-grid {
+        grid-template-columns: 1fr;
+    }
+}

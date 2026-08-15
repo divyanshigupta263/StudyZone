@@ -1,0 +1,160 @@
+/* ==========================================================================
+   StudyZone - CGPA & Semester Calculator Styles (css/cgpa.css)
+   Day 5 - Task 2: Mode Selector Tabs, Score Highlight Cards & Tabular Inputs
+   ========================================================================== */
+
+/* Mode Switcher Tabs */
+.cgpa-mode-tabs {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    background-color: var(--bg-card);
+    padding: 6px;
+    border-radius: var(--radius-lg);
+    border: 1px solid var(--border-subtle);
+    margin-bottom: 24px;
+    width: fit-content;
+}
+
+.cgpa-tab-btn {
+    background: none;
+    border: none;
+    padding: 8px 18px;
+    border-radius: var(--radius-md);
+    font-size: 0.84rem;
+    font-weight: 600;
+    color: var(--text-secondary);
+    cursor: pointer;
+    transition: all var(--transition-fast);
+}
+
+.cgpa-tab-btn:hover {
+    color: var(--text-primary);
+}
+
+.cgpa-tab-btn.active {
+    background-color: var(--bg-elevated);
+    color: var(--accent-blue);
+    box-shadow: var(--shadow-sm);
+}
+
+/* Panel Display */
+.cgpa-panel {
+    display: none;
+}
+
+.cgpa-panel.active {
+    display: block;
+}
+
+/* Score Highlight Header Cards */
+.score-highlight-card {
+    background-color: var(--bg-card);
+    border: 1px solid var(--border-subtle);
+    border-radius: var(--radius-xl);
+    padding: 24px;
+    margin-bottom: 24px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    box-shadow: var(--shadow-sm);
+    flex-wrap: wrap;
+    gap: 16px;
+}
+
+.score-main-group {
+    display: flex;
+    align-items: baseline;
+    gap: 12px;
+}
+
+.score-big-val {
+    font-family: var(--font-heading);
+    font-size: 3rem;
+    font-weight: 800;
+    color: var(--accent-blue);
+    line-height: 1;
+}
+
+.score-meta-group {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+
+.score-label {
+    font-size: 0.78rem;
+    font-weight: 600;
+    color: var(--text-secondary);
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+}
+
+.score-subtext {
+    font-size: 0.88rem;
+    color: var(--text-primary);
+    font-weight: 600;
+}
+
+/* Tabular Input Rows */
+.cgpa-rows-container {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    margin-bottom: 18px;
+}
+
+.cgpa-row {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    background-color: var(--bg-card);
+    padding: 10px 14px;
+    border-radius: var(--radius-md);
+    border: 1px solid var(--border-subtle);
+}
+
+.course-name-input, .sem-name-input { flex: 3; min-width: 180px; }
+.course-credits-input, .sem-credits-input { flex: 1; min-width: 80px; }
+.course-grade-select, .sem-gpa-input { flex: 1.5; min-width: 110px; }
+
+/* Target Planner Output Card */
+.target-planner-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 24px;
+}
+
+.target-result-card {
+    background-color: var(--bg-card);
+    border: 1px solid var(--border-subtle);
+    border-radius: var(--radius-xl);
+    padding: 24px;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    gap: 10px;
+}
+
+.target-res-header {
+    font-size: 0.8rem;
+    font-weight: 600;
+    color: var(--text-secondary);
+    text-transform: uppercase;
+}
+
+.target-res-val {
+    font-family: var(--font-heading);
+    font-size: 2.5rem;
+    font-weight: 800;
+    line-height: 1;
+}
+
+@media (max-width: 800px) {
+    .target-planner-grid {
+        grid-template-columns: 1fr;
+    }
+    .cgpa-row {
+        flex-wrap: wrap;
+    }
+}
