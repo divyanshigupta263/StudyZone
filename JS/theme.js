@@ -1,41 +1,52 @@
 /**
  * StudyZone - Theme Manager Module (js/theme.js)
- * Handles dark/light theme switching with smooth transitions and persistent storage.
+ * Day 1 - Task 2: Handles Light/Dark mode transitions & persistent preference storage.
  */
 
 const Theme = {
-    KEY: 'studyzone_theme',
-
     init() {
-        // Load saved theme or default to 'dark'
-        const savedTheme = localStorage.getItem(this.KEY) || 'dark';
-        this.applyTheme(savedTheme);
+        // Load saved theme preference from Storage, defaulting to 'dark'
+        const settings = Storage.loadSettings();
+        const initialTheme = settings && settings.theme ? settings.theme : 'dark';
+        
+        this.applyTheme(initialTheme);
 
         document.addEventListener('DOMContentLoaded', () => {
             this.bindEvents();
         });
     },
 
-    applyTheme(theme) {
-        document.documentElement.setAttribute('data-theme', theme);
-        localStorage.setItem(this.KEY, theme);
-        this.updateToggleButton(theme);
+    // Applies data-theme attribute on <html> element & saves preference
+    applyTheme(themeName) {
+        document.documentElement.setAttribute('data-theme', themeName);
+        
+        // Save preference safely using Storage helper
+        if (window.Storage) {
+            Storage.updateSettingKey('theme', themeName);
+        } else {
+            localStorage.setItem('studyzone_theme', themeName);
+        }
+
+        this.updateToggleButton(themeName);
     },
 
+    // Toggles between dark and light themes
     toggle() {
         const currentTheme = document.documentElement.getAttribute('data-theme') || 'dark';
-        const newTheme = currentTheme === 'dark' ? 'light' : 'dark';
-        this.applyTheme(newTheme);
+        const nextTheme = currentTheme === 'dark' ? 'light' : 'dark';
+        this.applyTheme(nextTheme);
     },
 
-    updateToggleButton(theme) {
+    // Updates topbar button icon & accessibility labels
+    updateToggleButton(themeName) {
         const toggleBtn = document.getElementById('theme-toggle-btn');
         if (!toggleBtn) return;
 
-        const isDark = theme === 'dark';
+        const isDark = themeName === 'dark';
         toggleBtn.setAttribute('aria-label', isDark ? 'Switch to Light Mode' : 'Switch to Dark Mode');
         toggleBtn.setAttribute('title', isDark ? 'Switch to Light Mode' : 'Switch to Dark Mode');
         
+        // Render Sun icon for Dark mode (clicking turns to light) and Moon icon for Light mode
         toggleBtn.innerHTML = isDark ? `
             <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                 <circle cx="12" cy="12" r="5"></circle>
@@ -48,12 +59,12 @@ const Theme = {
                 <line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line>
                 <line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line>
             </svg>
-            <span class="theme-btn-label">Light</span>
+            <span class="theme-btn-label">Light Mode</span>
         ` : `
             <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                 <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path>
             </svg>
-            <span class="theme-btn-label">Dark</span>
+            <span class="theme-btn-label">Dark Mode</span>
         `;
     },
 
@@ -65,6 +76,6 @@ const Theme = {
     }
 };
 
-// Initialize early to prevent dark/light visual flashing
+// Initialize theme immediately to prevent screen flashing
 Theme.init();
 window.Theme = Theme;

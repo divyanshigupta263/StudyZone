@@ -1,18 +1,85 @@
 /* ==========================================================================
    StudyZone - Todo & Task Manager Styles (css/todo.css)
-   Inspired by Linear Issue Tracker Layout
+   Day 3 - Task 1: Complete To-Do Manager, Input Bar, Modal & Filter Controls
    ========================================================================== */
 
-.task-filter-bar {
+/* Task Creation Card & Input Form */
+.todo-create-card {
+    background-color: var(--bg-card);
+    border: 1px solid var(--border-subtle);
+    border-radius: var(--radius-xl);
+    padding: 22px;
+    margin-bottom: 24px;
+    box-shadow: var(--shadow-sm);
+}
+
+.todo-create-card h2 {
+    font-family: var(--font-heading);
+    font-size: 1.05rem;
+    font-weight: 700;
+    margin-bottom: 14px;
+    color: var(--text-primary);
+}
+
+.todo-input-form {
     display: flex;
-    align-items: center;
-    justify-content: space-between;
-    margin-bottom: 20px;
-    gap: 16px;
+    flex-direction: column;
+    gap: 14px;
+}
+
+.todo-input-row {
+    display: flex;
+    gap: 12px;
     flex-wrap: wrap;
 }
 
-.filter-pills {
+.form-input-main {
+    flex: 2;
+    min-width: 220px;
+    height: 40px;
+    padding: 0 14px;
+    background-color: var(--bg-input);
+    border: 1px solid var(--border-subtle);
+    border-radius: var(--radius-md);
+    font-size: 0.88rem;
+    color: var(--text-primary);
+    transition: all var(--transition-fast);
+}
+
+.form-input-main:focus {
+    outline: none;
+    border-color: var(--accent-blue);
+    box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.15);
+    background-color: var(--bg-card);
+}
+
+.form-select-sm, .form-date-sm {
+    height: 40px;
+    padding: 0 12px;
+    background-color: var(--bg-input);
+    border: 1px solid var(--border-subtle);
+    border-radius: var(--radius-md);
+    font-size: 0.84rem;
+    color: var(--text-primary);
+    cursor: pointer;
+}
+
+.form-select-sm:focus, .form-date-sm:focus {
+    outline: none;
+    border-color: var(--accent-blue);
+}
+
+/* Toolbar: Filters, Search, Counter & Batch Action */
+.todo-toolbar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 18px;
+    gap: 14px;
+    flex-wrap: wrap;
+}
+
+.todo-filter-group {
     display: flex;
     align-items: center;
     gap: 6px;
@@ -22,7 +89,7 @@
     border: 1px solid var(--border-subtle);
 }
 
-.filter-btn {
+.todo-filter-btn {
     background: none;
     border: none;
     padding: 6px 14px;
@@ -34,22 +101,83 @@
     transition: all var(--transition-fast);
 }
 
-.filter-btn:hover {
+.todo-filter-btn:hover {
     color: var(--text-primary);
 }
 
-.filter-btn.active {
+.todo-filter-btn.active {
     background-color: var(--bg-elevated);
-    color: var(--text-primary);
+    color: var(--accent-blue);
     font-weight: 600;
     box-shadow: var(--shadow-sm);
 }
 
+.todo-search-box {
+    position: relative;
+    width: 220px;
+}
+
+.todo-search-box input {
+    width: 100%;
+    height: 36px;
+    padding: 0 12px 0 32px;
+    background-color: var(--bg-card);
+    border: 1px solid var(--border-subtle);
+    border-radius: var(--radius-md);
+    font-size: 0.82rem;
+    color: var(--text-primary);
+}
+
+.todo-search-box svg {
+    position: absolute;
+    left: 10px;
+    top: 50%;
+    transform: translateY(-50%);
+    color: var(--text-muted);
+}
+
+.todo-actions-group {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.todo-counter-badge {
+    font-size: 0.78rem;
+    color: var(--text-secondary);
+    font-weight: 500;
+    background-color: var(--bg-card);
+    padding: 4px 10px;
+    border-radius: var(--radius-md);
+    border: 1px solid var(--border-subtle);
+}
+
+.btn-secondary-sm {
+    height: 36px;
+    padding: 0 12px;
+    background-color: var(--bg-card);
+    border: 1px solid var(--border-subtle);
+    border-radius: var(--radius-md);
+    font-size: 0.8rem;
+    font-weight: 500;
+    color: var(--text-secondary);
+    cursor: pointer;
+    transition: all var(--transition-fast);
+}
+
+.btn-secondary-sm:hover {
+    background-color: var(--bg-card-hover);
+    color: var(--accent-rose);
+    border-color: var(--border-medium);
+}
+
+/* Tasks Container & Rows */
 .tasks-container {
     background-color: var(--bg-card);
     border: 1px solid var(--border-subtle);
     border-radius: var(--radius-xl);
     overflow: hidden;
+    box-shadow: var(--shadow-sm);
 }
 
 .task-item {
@@ -77,27 +205,40 @@
 }
 
 .task-checkbox {
-    width: 18px;
-    height: 18px;
-    border-radius: 4px;
+    width: 20px;
+    height: 20px;
+    border-radius: 5px;
     border: 2px solid var(--border-medium);
+    background: none;
     cursor: pointer;
     display: flex;
     align-items: center;
     justify-content: center;
+    font-size: 0.75rem;
+    font-weight: bold;
+    color: #FFFFFF;
     transition: all var(--transition-fast);
 }
 
+.task-checkbox:hover {
+    border-color: var(--accent-blue);
+}
+
 .task-checkbox.checked {
-    background-color: var(--accent-indigo);
-    border-color: var(--accent-indigo);
-    color: #FFFFFF;
+    background-color: var(--accent-blue);
+    border-color: var(--accent-blue);
+}
+
+.task-info-group {
+    display: flex;
+    flex-direction: column;
 }
 
 .task-title {
     font-size: 0.9rem;
     font-weight: 500;
     color: var(--text-primary);
+    transition: color 0.15s ease;
 }
 
 .task-item.completed .task-title {
@@ -105,18 +246,22 @@
     color: var(--text-muted);
 }
 
+.task-meta {
+    font-size: 0.74rem;
+    color: var(--text-muted);
+}
+
 .task-right {
     display: flex;
     align-items: center;
-    gap: 12px;
+    gap: 10px;
 }
 
 .badge {
-    font-size: 0.72rem;
+    font-size: 0.7rem;
     font-weight: 600;
     padding: 3px 8px;
     border-radius: 12px;
-    letter-spacing: 0.02em;
 }
 
 .badge-course {
@@ -126,7 +271,7 @@
 }
 
 .badge-priority-high {
-    background-color: rgba(244, 63, 94, 0.15);
+    background-color: rgba(239, 68, 68, 0.15);
     color: var(--accent-rose);
 }
 
@@ -140,7 +285,84 @@
     color: var(--accent-emerald);
 }
 
-.task-due-date {
-    font-size: 0.78rem;
+.task-actions {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+}
+
+.btn-action-icon {
+    width: 30px;
+    height: 30px;
+    border-radius: var(--radius-sm);
+    background: none;
+    border: none;
     color: var(--text-muted);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: all var(--transition-fast);
+}
+
+.btn-action-icon:hover {
+    background-color: var(--bg-elevated);
+    color: var(--accent-blue);
+}
+
+.btn-action-icon.delete:hover {
+    color: var(--accent-rose);
+    background-color: rgba(239, 68, 68, 0.15);
+}
+
+/* Edit Modal Dialog */
+.modal-backdrop {
+    display: none;
+    position: fixed;
+    inset: 0;
+    background-color: rgba(0, 0, 0, 0.6);
+    backdrop-filter: blur(4px);
+    z-index: 50;
+    align-items: center;
+    justify-content: center;
+}
+
+.modal-backdrop.active {
+    display: flex;
+}
+
+.modal-container {
+    background-color: var(--bg-sidebar);
+    border: 1px solid var(--border-medium);
+    border-radius: var(--radius-xl);
+    padding: 24px;
+    width: 100%;
+    max-width: 480px;
+    box-shadow: var(--shadow-lg);
+}
+
+.modal-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 18px;
+}
+
+.modal-header h3 {
+    font-family: var(--font-heading);
+    font-size: 1.1rem;
+    font-weight: 700;
+    color: var(--text-primary);
+}
+
+.btn-close-modal {
+    background: none;
+    border: none;
+    color: var(--text-muted);
+    font-size: 1.2rem;
+    cursor: pointer;
+}
+
+.btn-close-modal:hover {
+    color: var(--text-primary);
 }
