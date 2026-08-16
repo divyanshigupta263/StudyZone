@@ -228,6 +228,10 @@ const FocusTimer = {
 
         Storage.saveData('pomodoro_today', todayLog);
 
+        if (window.AppRouter && typeof window.AppRouter.recordActivityForStreak === 'function') {
+            window.AppRouter.recordActivityForStreak();
+        }
+
         // Sync with selected Study Goal subject
         const selectEl = document.getElementById('timer-task-select');
         if (selectEl && selectEl.value) {

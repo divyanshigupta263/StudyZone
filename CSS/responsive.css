@@ -49,6 +49,15 @@ html, body {
     color: var(--accent-blue);
 }
 
+@media (max-width: 1150px) {
+    .streak-label {
+        display: none;
+    }
+    .search-container {
+        width: 160px;
+    }
+}
+
 /* ==========================================================================
    BREAKPOINT: Laptop & Tablet (max-width: 1024px)
    ========================================================================== */
@@ -92,10 +101,14 @@ html, body {
     }
 
     .search-container {
-        width: 160px;
+        width: 140px;
     }
 
     .search-shortcut {
+        display: none;
+    }
+
+    .streak-label {
         display: none;
     }
 

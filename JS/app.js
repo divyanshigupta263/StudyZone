@@ -1,6 +1,6 @@
 /**
  * StudyZone - SPA Router & Controller (js/app.js)
- * Clean slate zero data, interactive streak tracking, password eye toggle, & SPA router.
+ * Clean slate zero data, interactive streak tracking engine, password eye toggle, & SPA router.
  */
 
 document.addEventListener('DOMContentLoaded', () => {
@@ -12,7 +12,6 @@ const AppRouter = {
         this.disableAllAutofillSuggestions();
         this.applySavedAccent();
         this.checkAuthStatus();
-        this.updateStreakUI();
         this.bindAuthEvents();
         this.bindProfileEvents();
         this.bindNavigation();
@@ -57,54 +56,77 @@ const AppRouter = {
         if (!activeUser) {
             if (topbarAuthBtn) topbarAuthBtn.style.display = 'inline-flex';
             this.updateUserProfileUI(null);
+            this.updateStreakUI(); // Reset streak to 0 in guest mode
         } else {
             if (topbarAuthBtn) topbarAuthBtn.style.display = 'none';
             if (authModal) authModal.classList.remove('active');
             this.updateUserProfileUI(activeUser);
+            this.recordActivityForStreak(); // Accrue streak for signed-in student
         }
     },
 
     // 2. Interactive Streak Tracker Engine
+    getTodayStr() {
+        const d = new Date();
+        const year = d.getFullYear();
+        const month = String(d.getMonth() + 1).padStart(2, '0');
+        const day = String(d.getDate()).padStart(2, '0');
+        return `${year}-${month}-${day}`;
+    },
+
+    getYesterdayStr() {
+        const d = new Date();
+        d.setDate(d.getDate() - 1);
+        const year = d.getFullYear();
+        const month = String(d.getMonth() + 1).padStart(2, '0');
+        const day = String(d.getDate()).padStart(2, '0');
+        return `${year}-${month}-${day}`;
+    },
+
     updateStreakUI() {
-        const todayStr = new Date().toISOString().split('T')[0];
-        const streakData = Storage.loadData('user_streak', { count: 0, lastDate: null });
-        
-        if (streakData.lastDate) {
-            const lastDate = new Date(streakData.lastDate);
-            const today = new Date(todayStr);
-            const diffDays = Math.floor((today - lastDate) / (1000 * 60 * 60 * 24));
-            if (diffDays > 1) {
-                streakData.count = 0;
-                Storage.saveData('user_streak', streakData);
-            }
-        }
-        
         const countEl = document.getElementById('streak-count-val');
-        if (countEl) countEl.textContent = streakData.count;
+        const activeUser = Storage.getActiveUser();
+
+        // In Guest Mode, streak is ALWAYS 0!
+        if (!activeUser) {
+            if (countEl) countEl.textContent = 0;
+            return;
+        }
+
+        const userKey = `user_streak_${activeUser.email || activeUser.id}`;
+        const streakData = Storage.loadData(userKey, { count: 1, lastDate: this.getTodayStr() });
+        if (countEl) countEl.textContent = streakData.count || 1;
     },
 
     recordActivityForStreak() {
-        const todayStr = new Date().toISOString().split('T')[0];
-        const streakData = Storage.loadData('user_streak', { count: 0, lastDate: null });
-        
-        if (streakData.lastDate === todayStr) return;
-        
-        if (!streakData.lastDate) {
-            streakData.count = 1;
-        } else {
-            const lastDate = new Date(streakData.lastDate);
-            const today = new Date(todayStr);
-            const diffDays = Math.floor((today - lastDate) / (1000 * 60 * 60 * 24));
-            
-            if (diffDays === 1) {
-                streakData.count += 1;
-            } else {
-                streakData.count = 1;
-            }
+        const activeUser = Storage.getActiveUser();
+
+        // Do not accrue streak for guest users
+        if (!activeUser) {
+            this.updateStreakUI();
+            return;
         }
-        
+
+        const userKey = `user_streak_${activeUser.email || activeUser.id}`;
+        const todayStr = this.getTodayStr();
+        const yesterdayStr = this.getYesterdayStr();
+        const streakData = Storage.loadData(userKey, { count: 0, lastDate: null });
+
+        if (streakData.lastDate === todayStr) {
+            this.updateStreakUI();
+            return;
+        }
+
+        if (streakData.lastDate === yesterdayStr) {
+            // Consecutive day activity!
+            streakData.count = (streakData.count || 0) + 1;
+        } else {
+            // First day or gap day reset to 1
+            streakData.count = 1;
+        }
+
         streakData.lastDate = todayStr;
-        Storage.saveData('user_streak', streakData);
+        Storage.saveData(userKey, streakData);
         this.updateStreakUI();
     },
 
